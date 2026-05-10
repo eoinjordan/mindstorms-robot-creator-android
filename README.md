@@ -5,6 +5,10 @@ Build, code, and control LEGO MINDSTORMS robots from your phone.
 
 **[Download APK](https://github.com/eoinjordan/mindstorms-robot-creator-android/releases/latest/download/app-release.apk)**
 
+## Screenshot
+
+<img src="docs/images/android-fleet-screen.png" alt="Mindstorms Robot Creator Android fleet screen" width="360">
+
 ## Features
 
 - BLE and USB connection paths for MINDSTORMS hubs
