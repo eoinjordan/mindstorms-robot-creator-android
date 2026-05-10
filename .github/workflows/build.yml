@@ -1,0 +1,63 @@
+name: Build & Release APK
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]*'
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Write local.properties
+        run: echo "sdk.dir=$ANDROID_HOME" > local.properties
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Build debug APK (on PRs and branch pushes)
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK artifact
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+
+      - name: Build release APK (on tags)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Upload release APK artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - name: Create GitHub Release and attach APK
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: app/build/outputs/apk/release/*.apk

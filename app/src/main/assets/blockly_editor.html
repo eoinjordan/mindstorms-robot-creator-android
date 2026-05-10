@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Blockly Editor</title>
+  <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+  <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/python_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/msg/en.js"></script>
+  <style>
+    body { margin: 0; padding: 0; height: 100vh; overflow: hidden; }
+    #blocklyDiv { height: 100%; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="blocklyDiv"></div>
+  <xml id="toolbox" style="display: none">
+    <category name="Motors" colour="120">
+      <block type="controls_repeat_ext"></block>
+      <block type="math_number"></block>
+    </category>
+    <category name="Logic" colour="210">
+      <block type="controls_if"></block>
+      <block type="logic_compare"></block>
+    </category>
+    <category name="Math" colour="230">
+      <block type="math_number"></block>
+      <block type="math_arithmetic"></block>
+    </category>
+  </xml>
+  <script>
+    var workspace = Blockly.inject('blocklyDiv', {
+      toolbox: document.getElementById('toolbox'),
+      scrollbars: true,
+      trashcan: true
+    });
+
+    function getPythonCode() {
+      return Blockly.Python.workspaceToCode(workspace);
+    }
+
+    function runCode() {
+      if (window.AndroidBridge) {
+        window.AndroidBridge.onRunCode(getPythonCode());
+      }
+    }
+  </script>
+</body>
+</html>
