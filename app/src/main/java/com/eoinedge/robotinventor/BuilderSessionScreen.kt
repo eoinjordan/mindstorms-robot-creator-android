@@ -165,59 +165,6 @@ fun BuilderSessionScreen(
         }
     }
 }
-
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-
-@Composable
-fun BuilderSessionScreen(
-    profile: RobotProfile?,
-    mcpClient: MindstormsMcpClient
-) {
-    if (profile == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Select a robot in the Fleet tab first.")
-        }
-        return
-    }
-
-    var goal by remember { mutableStateOf("test safe movement") }
-    var audience by remember { mutableStateOf("kid") }
-    var session by remember { mutableStateOf<BuilderSession?>(null) }
-    var observation by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Builder Session", style = MaterialTheme.typography.headlineMedium)
-        Text("One safe test, one observation, one next change.", style = MaterialTheme.typography.bodySmall)
-        
-        Spacer(Modifier.height(16.dp))
-
-        if (session == null) {
-            OutlinedTextField(
-                value = goal,
-                onValueChange = { goal = it },
-                label = { Text("Goal") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            Button(onClick = {
-                scope.launch {
-                    session = mcpClient.startBuilderSession(profile.id, goal, audience)
-                }
-            }) {
-                Text("Start Session")
-            }
         } else {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp)) {
