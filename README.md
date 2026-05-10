@@ -40,6 +40,16 @@ Requires Android Studio Ladybug or later and JDK 17+.
 
 APKs output to `app/build/outputs/apk/`.
 
+## Pybricks Firmware
+
+If you choose a Pybricks code target, install or restore firmware through Pybricks:
+
+- Pybricks Code: https://code.pybricks.com/
+- Install Pybricks firmware: https://pybricks.com/learn/getting-started/install-pybricks/
+- Pybricks documentation: https://docs.pybricks.com/
+
+This app generates compatible Python and handoff steps; it does not bundle Pybricks firmware.
+
 ## Related Repos
 
 - MCP/data/web/desktop repo: https://github.com/eoinjordan/mindstorms-robot-creator
