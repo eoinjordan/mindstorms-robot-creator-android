@@ -1,10 +1,32 @@
 package com.eoinedge.robotinventor
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +47,6 @@ fun BuilderSessionScreen(
     }
 
     var goal by remember { mutableStateOf("test safe movement") }
-    var audience by remember { mutableStateOf("kid") }
     var session by remember { mutableStateOf<BuilderSession?>(null) }
     var observation by remember { mutableStateOf("") }
     var showHandoffDialog by remember { mutableStateOf(false) }
@@ -33,7 +54,6 @@ fun BuilderSessionScreen(
     var isLoadingHandoff by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    // Handoff Steps dialog
     if (showHandoffDialog) {
         AlertDialog(
             onDismissRequest = { showHandoffDialog = false },
@@ -50,9 +70,9 @@ fun BuilderSessionScreen(
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
-                        handoffSteps.forEachIndexed { i, step ->
+                        handoffSteps.forEachIndexed { index, step ->
                             Text(
-                                "${i + 1}. $step",
+                                "${index + 1}. $step",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.padding(vertical = 2.dp)
                             )
@@ -69,10 +89,10 @@ fun BuilderSessionScreen(
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Builder Session", style = MaterialTheme.typography.headlineMedium)
         Text("One safe test, one observation, one next change.", style = MaterialTheme.typography.bodySmall)
-
         Spacer(Modifier.height(16.dp))
 
-        if (session == null) {
+        val activeSession = session
+        if (activeSession == null) {
             OutlinedTextField(
                 value = goal,
                 onValueChange = { goal = it },
@@ -82,146 +102,99 @@ fun BuilderSessionScreen(
             Spacer(Modifier.height(8.dp))
             Button(onClick = {
                 scope.launch {
-                    session = mcpClient.startBuilderSession(profile.id, goal, audience)
+                    session = mcpClient.startBuilderSession(profile.id, goal, "kid")
                 }
             }) {
                 Text("Start Session")
             }
-        } else {
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Session ID: ${session!!.id}", style = MaterialTheme.typography.labelSmall)
-                    Text("Goal: ${session!!.goal}", fontWeight = FontWeight.Bold)
+            return@Column
+        }
+
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp)) {
+                Text("Session ID: ${activeSession.id}", style = MaterialTheme.typography.labelSmall)
+                Text("Goal: ${activeSession.goal}", fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        LazyColumn(Modifier.weight(1f)) {
+            items(activeSession.steps) { step ->
+                Card(
+                    Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1A2A2A))
+                ) {
+                    Text(step.text, Modifier.padding(12.dp), color = Color.White)
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
-
-            LazyColumn(Modifier.weight(1f)) {
-                items(session!!.steps) { step ->
-                    Card(
-                        Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A2A2A))
-                    ) {
-                        Text(step.text, Modifier.padding(12.dp))
+            activeSession.summary?.let { summary ->
+                item {
+                    if (summary.likelyIssues.isNotEmpty()) {
+                        Text("Likely Issues", fontWeight = FontWeight.Bold, color = Color(0xFFFF6B6B))
+                        summary.likelyIssues.forEach { Text("- $it") }
                     }
-                }
-
-                session!!.summary?.let { summary ->
-                    item {
-                        if (summary.likelyIssues.isNotEmpty()) {
-                            Text("Likely Issues", fontWeight = FontWeight.Bold, color = Color(0xFFFF6B6B))
-                            summary.likelyIssues.forEach { Text("• $it") }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Text("Next Actions", fontWeight = FontWeight.Bold, color = Color(0xFF006A6A))
-                        summary.nextActions.forEach { Text("• $it") }
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = observation,
-                onValueChange = { observation = it },
-                label = { Text("Observation") },
-                placeholder = { Text("What happened?") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = {
-                    scope.launch {
-                        val summary = mcpClient.appendObservation(session!!.id, observation)
-                        session = session!!.copy(summary = summary)
-                        observation = ""
-                    }
-                }) {
-                    Text("Record")
-                }
-
-                OutlinedButton(onClick = {
-                    showHandoffDialog = true
-                    isLoadingHandoff = true
-                    scope.launch {
-                        try {
-                            val handoff = mcpClient.getOfficialHandoff(profile.id, session!!.goal)
-                            handoffSteps = handoff.steps
-                        } catch (e: Exception) {
-                            handoffSteps = listOf("Could not load handoff: ${e.message}")
-                        } finally {
-                            isLoadingHandoff = false
-                        }
-                    }
-                }) {
-                    Text("Handoff Steps")
-                }
-
-                TextButton(onClick = { session = null }) {
-                    Text("End")
+                    Spacer(Modifier.height(8.dp))
+                    Text("Next Actions", fontWeight = FontWeight.Bold, color = Color(0xFF006A6A))
+                    summary.nextActions.forEach { Text("- $it") }
                 }
             }
         }
-    }
-}
-        } else {
-            Card(Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Session ID: ${session!!.id}", style = MaterialTheme.typography.labelSmall)
-                    Text("Goal: ${session!!.goal}", fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            Spacer(Modifier.height(16.dp))
-            
-            LazyColumn(Modifier.weight(1f)) {
-                items(session!!.steps) { step ->
-                    Card(
-                        Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F4F4))
-                    ) {
-                        Text(step.text, Modifier.padding(12.dp))
-                    }
-                }
-                
-                session!!.summary?.let { summary ->
-                    item {
-                        if (summary.likelyIssues.isNotEmpty()) {
-                            Text("Likely Issues", fontWeight = FontWeight.Bold, color = Color.Red)
-                            summary.likelyIssues.forEach { Text("• $it") }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Text("Next Actions", fontWeight = FontWeight.Bold, color = Color(0xFF006A6A))
-                        summary.nextActions.forEach { Text("• $it") }
-                    }
-                }
-            }
 
-            Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-            OutlinedTextField(
-                value = observation,
-                onValueChange = { observation = it },
-                label = { Text("Observation") },
-                placeholder = { Text("What happened?") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            Row {
-                Button(onClick = {
+        OutlinedTextField(
+            value = observation,
+            onValueChange = { observation = it },
+            label = { Text("Observation") },
+            placeholder = { Text("What happened?") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                enabled = observation.isNotBlank(),
+                onClick = {
                     scope.launch {
-                        val summary = mcpClient.appendObservation(session!!.id, observation)
-                        session = session!!.copy(summary = summary)
+                        val text = observation
+                        val summary = mcpClient.appendObservation(activeSession.id, text)
+                        val step = BuilderStep(
+                            id = "local-${activeSession.steps.size + 1}",
+                            type = "observation",
+                            text = text,
+                            author = "human"
+                        )
+                        session = activeSession.copy(
+                            steps = activeSession.steps + step,
+                            summary = summary
+                        )
                         observation = ""
                     }
-                }) {
-                    Text("Record Observation")
                 }
-                Spacer(Modifier.width(8.dp))
-                TextButton(onClick = { session = null }) {
-                    Text("End Session")
+            ) {
+                Text("Record")
+            }
+
+            OutlinedButton(onClick = {
+                showHandoffDialog = true
+                isLoadingHandoff = true
+                scope.launch {
+                    try {
+                        val handoff = mcpClient.getOfficialHandoff(profile.id, activeSession.goal)
+                        handoffSteps = handoff.steps
+                    } catch (err: Exception) {
+                        handoffSteps = listOf("Could not load handoff: ${err.message}")
+                    } finally {
+                        isLoadingHandoff = false
+                    }
                 }
+            }) {
+                Text("Handoff Steps")
+            }
+
+            TextButton(onClick = { session = null }) {
+                Text("End")
             }
         }
     }

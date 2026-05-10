@@ -2,6 +2,7 @@ package com.eoinedge.robotinventor
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.encodeToString
@@ -25,7 +26,8 @@ data class BuilderStep(
     val id: String,
     val type: String,
     val text: String,
-    val data: Map<String, List<String>>? = null
+    val author: String? = null,
+    val data: JsonObject? = null
 )
 
 @Serializable
@@ -39,6 +41,8 @@ data class BuilderSummary(
 @Serializable
 data class OfficialClientHandoff(
     val clientId: String,
+    val profileName: String? = null,
+    val safety: List<String> = emptyList(),
     val steps: List<String>
 )
 
@@ -49,7 +53,14 @@ private data class ActionRequest(val action: String, val params: Map<String, Str
 private data class BuilderStartResponse(val ok: Boolean, val session: BuilderSession)
 
 @Serializable
-private data class BuilderUpdateResponse(val ok: Boolean, val summary: BuilderSummary? = null)
+private data class BuilderUpdateResponse(
+    val ok: Boolean,
+    val session: BuilderSession? = null,
+    val summary: BuilderSummary? = null
+)
+
+@Serializable
+private data class OfficialHandoffResponse(val ok: Boolean, val handoff: OfficialClientHandoff)
 
 interface MindstormsMcpClient {
     suspend fun startBuilderSession(profileId: String, goal: String, audience: String): BuilderSession
@@ -83,16 +94,18 @@ class HttpMindstormsMcpClient(private val baseUrl: String) : MindstormsMcpClient
     override suspend fun getOfficialHandoff(profileId: String, goal: String): OfficialClientHandoff = withContext(Dispatchers.IO) {
         val params = mapOf("profileId" to profileId, "goal" to goal)
         val response = post("official_client_handoff", params)
-        json.decodeFromString<OfficialClientHandoff>(response)
+        json.decodeFromString<OfficialHandoffResponse>(response).handoff
     }
 
     override suspend fun generateCode(profileId: String, intent: String, target: String): String = withContext(Dispatchers.IO) {
         val params = mapOf("profileId" to profileId, "intent" to intent, "target" to target)
         val response = post("code_generate", params)
-        // Response is {ok:true, code:"..."}; extract the code field or return raw on failure
+        // Response is {ok:true, source:"..."}; older servers used code.
         try {
             val obj = json.parseToJsonElement(response)
-            obj.jsonObject["code"]?.jsonPrimitive?.content ?: response
+            obj.jsonObject["source"]?.jsonPrimitive?.content
+                ?: obj.jsonObject["code"]?.jsonPrimitive?.content
+                ?: response
         } catch (e: Exception) { response }
     }
 
@@ -109,7 +122,8 @@ class HttpMindstormsMcpClient(private val baseUrl: String) : MindstormsMcpClient
             val body = json.encodeToString(ActionRequest(action, params))
             conn.outputStream.use { it.write(body.toByteArray()) }
             
-            conn.inputStream.bufferedReader().use { it.readText() }
+            val stream = if (conn.responseCode in 200..299) conn.inputStream else conn.errorStream
+            stream.bufferedReader().use { it.readText() }
         } catch (e: Exception) {
             e.printStackTrace()
             "{\"ok\": false, \"error\": \"${e.message}\"}"
@@ -125,7 +139,7 @@ class FakeMindstormsMcpClient : MindstormsMcpClient {
             goal = goal,
             audience = audience,
             steps = listOf(
-                BuilderStep("1", "instruction", "Open the LEGO app and run a short test.")
+                BuilderStep("1", "agent_instruction", "Open the LEGO app and run a short test.")
             )
         )
     }
@@ -145,6 +159,8 @@ class FakeMindstormsMcpClient : MindstormsMcpClient {
     override suspend fun getOfficialHandoff(profileId: String, goal: String): OfficialClientHandoff {
         return OfficialClientHandoff(
             clientId = "robot-inventor-51515",
+            profileName = profileId,
+            safety = listOf("Keep the stop control visible."),
             steps = listOf("Open app", "Connect BLE", "Add motor block", "Press Play")
         )
     }

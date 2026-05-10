@@ -199,7 +199,7 @@ private fun defaultCode(profile: RobotProfile, intent: String): String {
     val ports = profile.ports.joinToString("\n") { "# Port ${it.port}: ${it.role} (${it.type})" }
     return when (intent) {
         "beep" -> """
-# ${profile.name} — Beep intent (Pybricks)
+# ${profile.name} - Beep intent (Pybricks)
 from pybricks.hubs import InventorHub
 from pybricks.tools import wait
 
@@ -215,7 +215,7 @@ hub.speaker.beep(880, 300)
             val motorA = profile.ports.firstOrNull { "drive" in it.role.lowercase() || it.role == "left_drive" }?.port ?: "A"
             val motorB = profile.ports.firstOrNull { it.role == "right_drive" }?.port ?: "B"
             """
-# ${profile.name} — Drive intent (Pybricks)
+# ${profile.name} - Drive intent (Pybricks)
 from pybricks.hubs import InventorHub
 from pybricks.pupdevices import Motor
 from pybricks.parameters import Port, Direction
@@ -239,7 +239,7 @@ right.stop()
         "wave" -> {
             val armPort = profile.ports.firstOrNull { "arm" in it.role.lowercase() || "wave" in it.role.lowercase() }?.port ?: "C"
             """
-# ${profile.name} — Wave intent (Pybricks)
+# ${profile.name} - Wave intent (Pybricks)
 from pybricks.hubs import InventorHub
 from pybricks.pupdevices import Motor
 from pybricks.parameters import Port
@@ -262,7 +262,7 @@ arm.stop()
         }
 
         "probe" -> """
-# ${profile.name} — Probe intent (Pybricks)
+# ${profile.name} - Probe intent (Pybricks)
 from pybricks.hubs import InventorHub
 from pybricks.pupdevices import Motor
 from pybricks.parameters import Port
@@ -324,7 +324,7 @@ private fun exportLmsFile(context: Context, profile: RobotProfile, intent: Strin
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "application/octet-stream"
         putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_SUBJECT, "${profile.name} — $intent.lms")
+        putExtra(Intent.EXTRA_SUBJECT, "${profile.name} - $intent.lms")
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
     context.startActivity(Intent.createChooser(shareIntent, "Open in LEGO App"))
