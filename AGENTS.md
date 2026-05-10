@@ -44,6 +44,8 @@ app/src/main/assets/robot_profiles_51515.json
 - Store probe sessions in a schema-compatible shape before adding ML.
 - Add visible stop/abort controls before any real motor command path.
 - Keep data export explicit and user-triggered.
+- Do not bundle third-party firmware, proprietary assets, or paid coding features without an explicit license review.
+- Treat Pybricks as an external compatibility target, not as code owned by this app.
 
 ## Build And Check
 

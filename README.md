@@ -51,6 +51,8 @@ For local automation that needs the MCP repo, set:
 $env:MINDSTORMS_MCP_REPO_DIR="<mcp-repo-root>"
 ```
 
-## License
+## Compatibility And License
 
-MIT - see [LICENSE](LICENSE).
+This is an independent app. It is not an official LEGO or Pybricks product, and it does not bundle Pybricks firmware, LEGO firmware, or paid third-party coding tools.
+
+Project code is MIT licensed. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
