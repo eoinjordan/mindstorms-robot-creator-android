@@ -49,29 +49,26 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            MaterialTheme {
-                val context = LocalContext.current
-                val prefs = remember { context.getSharedPreferences("settings", MODE_PRIVATE) }
-                val serverUrl = remember { mutableStateOf(prefs.getString("mcp_server_url", "http://10.0.2.2:3095") ?: "http://10.0.2.2:3095") }
-                
-                // Update client when URL changes
-                val mcpClient = remember(serverUrl.value) { 
-                    if (serverUrl.value.contains("fake")) FakeMindstormsMcpClient() 
-                    else HttpMindstormsMcpClient(serverUrl.value) 
-                }
+            val context = LocalContext.current
+            val prefs = remember { context.getSharedPreferences("settings", MODE_PRIVATE) }
+            val serverUrl = remember { mutableStateOf(prefs.getString("mcp_server_url", "http://10.0.2.2:3095") ?: "http://10.0.2.2:3095") }
 
-                MainAppShell(
-                    transport = currentTransport!!,
-                    mcpClient = mcpClient,
-                    isSimulated = currentTransport is SimulatedTransport,
-                    onTransportChange = { isSim ->
-                        currentTransport = if (isSim) simulatedTransport else bleTransport
-                    },
-                    onRefreshSettings = {
-                        serverUrl.value = prefs.getString("mcp_server_url", "http://10.0.2.2:3095") ?: "http://10.0.2.2:3095"
-                    }
-                )
+            val mcpClient = remember(serverUrl.value) {
+                if (serverUrl.value.contains("fake")) FakeMindstormsMcpClient()
+                else HttpMindstormsMcpClient(serverUrl.value)
             }
+
+            MainAppShell(
+                transport = currentTransport!!,
+                mcpClient = mcpClient,
+                isSimulated = currentTransport is SimulatedTransport,
+                onTransportChange = { isSim ->
+                    currentTransport = if (isSim) simulatedTransport else bleTransport
+                },
+                onRefreshSettings = {
+                    serverUrl.value = prefs.getString("mcp_server_url", "http://10.0.2.2:3095") ?: "http://10.0.2.2:3095"
+                }
+            )
         }
     }
 }

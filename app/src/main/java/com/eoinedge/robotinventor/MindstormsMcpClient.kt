@@ -2,6 +2,8 @@ package com.eoinedge.robotinventor
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.encodeToString
 import java.net.HttpURLConnection
 import java.net.URL
@@ -54,6 +56,7 @@ interface MindstormsMcpClient {
     suspend fun appendObservation(sessionId: String, text: String): BuilderSummary?
     suspend fun summarizeSession(sessionId: String): BuilderSummary?
     suspend fun getOfficialHandoff(profileId: String, goal: String): OfficialClientHandoff
+    suspend fun generateCode(profileId: String, intent: String, target: String = "pybricks"): String
 }
 
 class HttpMindstormsMcpClient(private val baseUrl: String) : MindstormsMcpClient {
@@ -80,8 +83,17 @@ class HttpMindstormsMcpClient(private val baseUrl: String) : MindstormsMcpClient
     override suspend fun getOfficialHandoff(profileId: String, goal: String): OfficialClientHandoff = withContext(Dispatchers.IO) {
         val params = mapOf("profileId" to profileId, "goal" to goal)
         val response = post("official_client_handoff", params)
-        // Note: The schema might vary slightly, but we'll adapt.
         json.decodeFromString<OfficialClientHandoff>(response)
+    }
+
+    override suspend fun generateCode(profileId: String, intent: String, target: String): String = withContext(Dispatchers.IO) {
+        val params = mapOf("profileId" to profileId, "intent" to intent, "target" to target)
+        val response = post("code_generate", params)
+        // Response is {ok:true, code:"..."}; extract the code field or return raw on failure
+        try {
+            val obj = json.parseToJsonElement(response)
+            obj.jsonObject["code"]?.jsonPrimitive?.content ?: response
+        } catch (e: Exception) { response }
     }
 
     private fun post(action: String, params: Map<String, String>): String {
@@ -135,5 +147,14 @@ class FakeMindstormsMcpClient : MindstormsMcpClient {
             clientId = "robot-inventor-51515",
             steps = listOf("Open app", "Connect BLE", "Add motor block", "Press Play")
         )
+    }
+
+    override suspend fun generateCode(profileId: String, intent: String, target: String): String {
+        return when (intent) {
+            "beep" -> """import hub\nhub.sound.beep(440, 500)\nprint('Beep! ${profileId}')""" 
+            "drive" -> """import hub, time\nhub.port.A.motor.run_for_rotations(2, 50)\nhub.port.B.motor.run_for_rotations(2, 50)"""
+            "wave" -> """import hub, time\nfor i in range(3):\n    hub.port.A.motor.run_for_degrees(90, 30)\n    time.sleep_ms(300)\n    hub.port.A.motor.run_for_degrees(-90, 30)"""
+            else -> """import hub\nprint('Hello from ${profileId}!')"""
+        }
     }
 }
