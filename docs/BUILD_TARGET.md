@@ -1,32 +1,33 @@
 # Build Target
 
-Gemini and other agents should build this project:
-
-```text
-C:\Users\Eoin\AndroidStudioProjects\MindstormsAICreator
-```
-
-Use this command from that directory:
+This repository is the public Android app project. Build from the repo root:
 
 ```powershell
 .\gradlew.bat :app:assembleDebug
+.\gradlew.bat :app:testDebugUnitTest
 ```
 
-Do not build this path unless the user explicitly asks for the repo scaffold:
+On macOS/Linux:
 
-```text
-C:\Users\Eoin\git\lego-mindstorms-mcp\android\robot-inventor-app
+```bash
+./gradlew :app:assembleDebug :app:testDebugUnitTest
+```
+
+Do not document or commit user-specific absolute paths. If a task needs the MCP/data repo, use:
+
+```powershell
+$env:MINDSTORMS_MCP_REPO_DIR="<mcp-repo-root>"
 ```
 
 ## Current Project State
 
 - Android namespace: `com.eoinedge.robotinventor`
-- Main activity: `app\src\main\java\com\example\mindstormsaicreator\MainActivity.kt`
+- Application ID: `com.eoinedge.robotinventor`
+- Main activity: `app/src/main/java/com/eoinedge/robotinventor/MainActivity.kt`
 - Transport contract: `RobotTransport.kt`
 - Simulated transport: `SimulatedTransport.kt`
-- 51515 profile asset: `app\src\main\assets\robot_profiles_51515.json`
+- 51515 profile asset: `app/src/main/assets/robot_profiles_51515.json`
 
 ## Expected First Screen
 
 The app should open directly to the usable fleet screen. It should show the 51515 robots, not a landing page.
-

@@ -1,6 +1,6 @@
 # Java Setup For Gradle
 
-The project has an Android Studio bundled JDK available at:
+Android Studio includes a bundled JDK. On a default Windows install it is usually available at:
 
 ```text
 C:\Program Files\Android\Android Studio\jbr
@@ -20,5 +20,4 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 .\gradlew.bat :app:assembleDebug --console=plain
 ```
 
-Gemini should use the same `JAVA_HOME` setting when invoking Gradle from a shell.
-
+Agents and scripts should use the same `JAVA_HOME` setting when invoking Gradle from a shell. Do not commit machine-specific `JAVA_HOME` or `local.properties` values.

@@ -1,72 +1,51 @@
-# Mindstorms Robot Creator — Android
+# Mindstorms Robot Creator Android
 
-Android companion app for [Mindstorms Robot Creator](https://github.com/eoinjordan/mindstorms-robot-creator).  
+Android companion app for [Mindstorms Robot Creator](https://github.com/eoinjordan/mindstorms-robot-creator).
 Build, code, and control LEGO MINDSTORMS robots from your phone.
 
-**[⬇ Download APK](https://github.com/eoinjordan/mindstorms-robot-creator-android/releases/latest)**
+**[Download APK](https://github.com/eoinjordan/mindstorms-robot-creator-android/releases/latest/download/app-release.apk)**
 
 ## Features
 
-- BLE + USB connection to MINDSTORMS hubs (EV3, 51515, SPIKE)
-- AI-powered MicroPython code generator
-- Builder session with live hub status and observation log
-- Session history (Room database)
+- BLE and USB connection paths for MINDSTORMS hubs
+- AI-assisted MicroPython code generation
+- Builder session with hub status and observation log
+- Session history with Room
 - Safe motor probe runner
-- Voice keyword spotting (Edge Impulse WebAssembly)
+- Voice keyword spotting
 - Telemetry graphs
 - Simulated transport for offline testing
-- Works offline — no cloud, no account required
+- Offline-first behavior; no cloud account required
 
-## Tech stack
+## Tech Stack
 
-- Kotlin + Jetpack Compose (Material 3)
+- Kotlin and Jetpack Compose
 - Room database for session history
-- Kotlinx Serialization + Coroutines
-- Material 3 Adaptive layout (phone + tablet)
+- Kotlinx Serialization and Coroutines
+- Material 3 adaptive layout for phone and tablet
 
 ## Build
 
-Requires Android Studio Ladybug or later, JDK 17+.
+Requires Android Studio Ladybug or later and JDK 17+.
 
 ```bash
-./gradlew assembleDebug      # debug APK
-./gradlew assembleRelease    # unsigned release APK
+./gradlew assembleDebug
+./gradlew testDebugUnitTest
 ```
 
 APKs output to `app/build/outputs/apk/`.
 
-## License
+## Related Repos
 
-MIT — see [LICENSE](LICENSE)
+- MCP/data/web/desktop repo: https://github.com/eoinjordan/mindstorms-robot-creator
+- This Android repo publishes package `com.eoinedge.robotinventor`.
 
-
-The MCP/data repo is:
-
-```text
-C:\Users\Eoin\git\lego-mindstorms-mcp
-```
-
-## Current State
-
-- Kotlin/Compose Android project.
-- `RobotTransport` interface exists.
-- `SimulatedTransport` exists and should stay working.
-- 51515 profile asset is present at `app/src/main/assets/robot_profiles_51515.json`.
-- The first target robot set is Blast, Charlie, Gelo, M.V.P., and Tricky.
-
-## Build
+For local automation that needs the MCP repo, set:
 
 ```powershell
-.\gradlew.bat :app:assembleDebug
+$env:MINDSTORMS_MCP_REPO_DIR="<mcp-repo-root>"
 ```
 
-If build fails because Java is unavailable, set `JAVA_HOME` to a JDK and retry.
-On this machine, Android Studio's bundled JDK is documented in `docs/JAVA_SETUP.md`.
+## License
 
-## Agent Docs
-
-- `GEMINI.md`
-- `AGENTS.md`
-- `docs/BUILD_TARGET.md`
-- `docs/51515_PROFILES.md`
-- `docs/JAVA_SETUP.md`
+MIT - see [LICENSE](LICENSE).

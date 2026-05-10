@@ -11,7 +11,7 @@ app\src\main\assets\robot_profiles_51515.json
 Source repo:
 
 ```text
-C:\Users\Eoin\git\lego-mindstorms-mcp\examples\profiles\51515
+<mcp-repo-root>/examples/profiles/51515
 ```
 
 ## Robots
@@ -48,4 +48,3 @@ For each robot, generate a summary like:
 - sample telemetry rows
 
 Do not add real motor control until stop/abort is visible.
-
