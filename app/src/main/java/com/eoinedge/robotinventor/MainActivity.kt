@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +59,8 @@ class MainActivity : ComponentActivity() {
                 else HttpMindstormsMcpClient(serverUrl.value)
             }
 
+            var simpleMode by remember { mutableStateOf(prefs.getBoolean("simple_mode", false)) }
+
             MainAppShell(
                 transport = currentTransport!!,
                 mcpClient = mcpClient,
@@ -67,6 +70,11 @@ class MainActivity : ComponentActivity() {
                 },
                 onRefreshSettings = {
                     serverUrl.value = prefs.getString("mcp_server_url", "http://10.0.2.2:3095") ?: "http://10.0.2.2:3095"
+                },
+                simpleMode = simpleMode,
+                onSetSimpleMode = { enabled ->
+                    simpleMode = enabled
+                    prefs.edit().putBoolean("simple_mode", enabled).apply()
                 }
             )
         }
@@ -89,7 +97,9 @@ fun MainAppShell(
     mcpClient: MindstormsMcpClient,
     isSimulated: Boolean,
     onTransportChange: (Boolean) -> Unit,
-    onRefreshSettings: () -> Unit
+    onRefreshSettings: () -> Unit,
+    simpleMode: Boolean,
+    onSetSimpleMode: (Boolean) -> Unit
 ) {
     val darkTeal = Color(0xFF006A6A)
     MaterialTheme(
@@ -108,9 +118,22 @@ fun MainAppShell(
         val profiles = remember { repository.loadProfiles() }
         var selectedProfile by remember { mutableStateOf(profiles.firstOrNull()) }
 
+        // Simple (Kids) Mode takes over the whole screen with a big Blockly canvas.
+        if (simpleMode) {
+            SimpleModeScreen(
+                profile = selectedProfile,
+                onExitSimpleMode = { onSetSimpleMode(false) }
+            )
+            return@MaterialTheme
+        }
+
         if (isExpanded) {
             Row(Modifier.fillMaxSize()) {
-                NavigationRail {
+                NavigationRail(
+                    header = {
+                        KidsModeButton(onClick = { onSetSimpleMode(true) }, compact = true)
+                    }
+                ) {
                     Screen.entries.forEach { screen ->
                         NavigationRailItem(
                             selected = currentScreen == screen,
@@ -137,6 +160,9 @@ fun MainAppShell(
             }
         } else {
             Scaffold(
+                floatingActionButton = {
+                    KidsModeButton(onClick = { onSetSimpleMode(true) }, compact = false)
+                },
                 bottomBar = {
                     NavigationBar {
                         Screen.entries.forEach { screen ->
@@ -166,6 +192,27 @@ fun MainAppShell(
                 }
             }
         }
+    }
+}
+
+/** Prominent entry point into the kid-friendly Simple Mode. */
+@Composable
+private fun KidsModeButton(onClick: () -> Unit, compact: Boolean) {
+    if (compact) {
+        FilledTonalIconButton(
+            onClick = onClick,
+            modifier = Modifier.padding(vertical = 12.dp)
+        ) {
+            Icon(Icons.Default.Face, contentDescription = "Simple Mode for kids")
+        }
+    } else {
+        ExtendedFloatingActionButton(
+            onClick = onClick,
+            icon = { Icon(Icons.Default.Face, contentDescription = null) },
+            text = { Text("Kids Mode") },
+            containerColor = Color(0xFF6D28D9),
+            contentColor = Color.White
+        )
     }
 }
 

@@ -305,7 +305,7 @@ print("Hello from ${profile.name}!")
  * Packages the Python code as a minimal .lms ZIP archive and shares it
  * via the Android share sheet so users can open it in the LEGO app.
  */
-private fun exportLmsFile(context: Context, profile: RobotProfile, intent: String, code: String) {
+internal fun exportLmsFile(context: Context, profile: RobotProfile, intent: String, code: String) {
     val dir = File(context.cacheDir, "lms_exports").also { it.mkdirs() }
     val file = File(dir, "${profile.id}-$intent.lms")
 
@@ -331,7 +331,7 @@ private fun exportLmsFile(context: Context, profile: RobotProfile, intent: Strin
 }
 
 @Composable
-fun BlocklyEditor(onRunCode: (String) -> Unit) {
+fun BlocklyEditor(kidsMode: Boolean = false, onRunCode: (String) -> Unit) {
     AndroidView(
         factory = { context ->
             WebView(context).apply {
@@ -345,7 +345,8 @@ fun BlocklyEditor(onRunCode: (String) -> Unit) {
                     @JavascriptInterface
                     fun onRunCode(code: String) { onRunCode(code) }
                 }, "AndroidBridge")
-                loadUrl("file:///android_asset/blockly_editor.html")
+                val url = "file:///android_asset/blockly_editor.html" + if (kidsMode) "?kids=1" else ""
+                loadUrl(url)
             }
         },
         modifier = Modifier.fillMaxSize()

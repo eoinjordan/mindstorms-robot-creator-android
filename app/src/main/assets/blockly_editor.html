@@ -18,6 +18,14 @@
     #clearBtn  { background: #374151; color: #e2e8f0; }
     #statusMsg { font-size: 12px; color: #9ca3af; flex: 1; }
     #blocklyDiv { flex: 1; width: 100%; }
+
+    /* Kids / Simple mode: bigger, friendlier controls */
+    body.kids #toolbar { padding: 10px 14px; min-height: 64px; background: #1d4ed8; }
+    body.kids #runBtn { font-size: 20px; padding: 12px 28px; border-radius: 14px;
+                        background: #22c55e; box-shadow: 0 3px 0 #15803d; }
+    body.kids #clearBtn { font-size: 18px; padding: 12px 20px; border-radius: 14px;
+                          background: #f97316; color: #fff; box-shadow: 0 3px 0 #c2410c; }
+    body.kids #statusMsg { font-size: 16px; color: #dbeafe; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -27,6 +35,49 @@
   <span id="statusMsg"></span>
 </div>
 <div id="blocklyDiv"></div>
+
+<!-- Simplified, kid-friendly toolbox (used in Simple Mode) -->
+<xml id="toolbox_kids" style="display:none">
+  <category name="&#128293; Light &amp; Sound" colour="#0ea5e9">
+    <block type="ms_hub_light"><field name="COLOR">green</field></block>
+    <block type="ms_hub_light_off"></block>
+    <block type="ms_hub_beep">
+      <value name="FREQ"><block type="math_number"><field name="NUM">440</field></block></value>
+      <value name="DUR"><block type="math_number"><field name="NUM">0.5</field></block></value>
+    </block>
+    <block type="ms_print">
+      <value name="MSG"><block type="text"><field name="TEXT">hello</field></block></value>
+    </block>
+  </category>
+  <category name="&#128640; Move" colour="#10b981">
+    <block type="ms_motor_run">
+      <field name="PORT">A</field>
+      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
+      <value name="SECS"><block type="math_number"><field name="NUM">2</field></block></value>
+    </block>
+    <block type="ms_motor_degrees">
+      <field name="PORT">A</field>
+      <value name="DEGREES"><block type="math_number"><field name="NUM">360</field></block></value>
+      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
+    </block>
+    <block type="ms_motor_stop"><field name="PORT">A</field></block>
+    <block type="ms_pair_move">
+      <field name="LEFT">A</field>
+      <field name="RIGHT">B</field>
+      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
+      <value name="SECS"><block type="math_number"><field name="NUM">2</field></block></value>
+    </block>
+  </category>
+  <category name="&#128260; Repeat &amp; Wait" colour="#8b5cf6">
+    <block type="ms_wait">
+      <value name="SECS"><block type="math_number"><field name="NUM">1</field></block></value>
+    </block>
+    <block type="controls_repeat_ext">
+      <value name="TIMES"><block type="math_number"><field name="NUM">5</field></block></value>
+    </block>
+  </category>
+</xml>
+
 
 <xml id="toolbox" style="display:none">
   <category name="Hub" colour="#0ea5e9">
@@ -315,12 +366,21 @@ PY.forBlock["ms_force_read"] = function(b, gen) {
 
 // ── Workspace init ───────────────────────────────────────────────────────────
 
+const KIDS = new URLSearchParams(location.search).get("kids") === "1";
+if (KIDS) {
+  document.body.classList.add("kids");
+  document.getElementById("runBtn").innerHTML = "&#9654; Run on Robot";
+  document.getElementById("statusMsg").textContent = "Drag blocks together, then tap Run!";
+}
+
 const workspace = Blockly.inject("blocklyDiv", {
-  toolbox: document.getElementById("toolbox"),
+  toolbox: document.getElementById(KIDS ? "toolbox_kids" : "toolbox"),
+  renderer: KIDS ? "zelos" : "geras",
   scrollbars: true,
   trashcan: true,
   grid: { spacing: 20, length: 3, colour: "#2d3748", snap: true },
-  zoom: { controls: true, wheel: true, startScale: 0.95, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
+  zoom: { controls: true, wheel: true,
+          startScale: KIDS ? 1.25 : 0.95, maxScale: 3, minScale: 0.3, scaleSpeed: 1.2 },
   theme: Blockly.Themes.Dark || Blockly.Theme.defineTheme("dark", {
     base: Blockly.Themes.Classic,
     componentStyles: { workspaceBackgroundColour: "#1a1a2e", toolboxBackgroundColour: "#16213e",
