@@ -57,7 +57,7 @@ import java.util.zip.ZipOutputStream
 
 private val INTENTS = listOf("beep", "drive", "wave", "probe")
 
-private data class CodeTarget(val value: String, val label: String)
+internal data class CodeTarget(val value: String, val label: String)
 
 @Composable
 fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
@@ -260,7 +260,7 @@ fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
     }
 }
 
-private fun targetsFor(profile: RobotProfile): List<CodeTarget> {
+internal fun targetsFor(profile: RobotProfile): List<CodeTarget> {
     val values = if (profile.programTargets.isNotEmpty()) profile.programTargets else when (profile.family) {
         "wedo2" -> listOf("wedo2-micropython", "pybricks-city")
         "robot-inventor", "spike-prime" -> listOf("lego-stock-python", "pybricks-python")
@@ -273,7 +273,7 @@ private fun targetsFor(profile: RobotProfile): List<CodeTarget> {
     return values.map { CodeTarget(it, targetLabel(it)) }
 }
 
-private fun targetLabel(target: String): String = when (target) {
+internal fun targetLabel(target: String): String = when (target) {
     "wedo2-micropython" -> "WeDo 2.0 App"
     "pybricks-city" -> "Pybricks CityHub"
     "lego-stock-python" -> "LEGO App Python"
@@ -287,7 +287,7 @@ private fun targetLabel(target: String): String = when (target) {
     else -> target
 }
 
-private fun blockTargetFor(profile: RobotProfile): String = when (profile.family) {
+internal fun blockTargetFor(profile: RobotProfile): String = when (profile.family) {
     "wedo2" -> "wedo2-micropython"
     "rcx" -> "rcx-nqc"
     "nxt" -> "nxt-python"
@@ -296,26 +296,26 @@ private fun blockTargetFor(profile: RobotProfile): String = when (profile.family
     else -> "lego-stock-python"
 }
 
-private fun serverIntent(intent: String): String = when (intent) {
+internal fun serverIntent(intent: String): String = when (intent) {
     "beep" -> "beep_hello"
     "drive" -> "drive_forward"
     "probe" -> "safe_probe"
     else -> intent
 }
 
-private fun extensionFor(target: String): String = when (target) {
+internal fun extensionFor(target: String): String = when (target) {
     "lego-stock-python", "spike-stock" -> "lms"
     "rcx-nqc" -> "nqc"
     "arduino-basex" -> "ino"
     else -> "py"
 }
 
-private fun downloadName(profile: RobotProfile, intent: String, target: String): String {
+internal fun downloadName(profile: RobotProfile, intent: String, target: String): String {
     val safeIntent = intent.replace(Regex("[^A-Za-z0-9_-]"), "-")
     return "${profile.id}-$safeIntent.${extensionFor(target)}"
 }
 
-private fun defaultCode(profile: RobotProfile, intent: String, target: String): String {
+internal fun defaultCode(profile: RobotProfile, intent: String, target: String): String {
     return when (target) {
         "wedo2-micropython" -> wedoCode(profile, intent)
         "pybricks-city" -> cityHubPybricksCode(profile, intent)

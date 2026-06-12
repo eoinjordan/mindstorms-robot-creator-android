@@ -32,6 +32,7 @@ class SimulatedTransport : RobotTransport {
 
     override suspend fun connect(deviceId: String): RobotConnection {
         delay(500)
+        require(simulatedDevices.any { it.id == deviceId }) { "Unknown simulated robot: $deviceId" }
         return object : RobotConnection {
             override val deviceId: String = deviceId
             override suspend fun disconnect() {
@@ -56,6 +57,8 @@ class SimulatedTransport : RobotTransport {
     }
 
     override suspend fun runProbe(plan: ProbePlan): Flow<ProbeTelemetry> = flow {
+        require(plan.durationMs in 1..10_000) { "Probe duration must be between 1 ms and 10000 ms" }
+        require(plan.maxDuty in 0f..0.5f) { "Simulated probe duty must be between 0.0 and 0.5" }
         val startTime = System.currentTimeMillis()
         while (System.currentTimeMillis() - startTime < plan.durationMs) {
             val now = System.currentTimeMillis()
@@ -63,8 +66,8 @@ class SimulatedTransport : RobotTransport {
                 ProbeTelemetry(
                     tMs = now - startTime,
                     ports = mapOf(
-                        "A" to PortData(position = Random.nextFloat() * 360, speed = Random.nextFloat() * 100),
-                        "B" to PortData(position = Random.nextFloat() * 360, speed = Random.nextFloat() * 100)
+                        "A" to PortData(position = Random.nextFloat() * 360, speed = Random.nextFloat() * 100, duty = plan.maxDuty),
+                        "B" to PortData(position = Random.nextFloat() * 360, speed = Random.nextFloat() * 100, duty = plan.maxDuty)
                     ),
                     imu = ImuData(
                         ax = Random.nextFloat() * 2 - 1,

@@ -118,10 +118,10 @@ class HttpMindstormsMcpClient(private val baseUrl: String) : MindstormsMcpClient
             conn.connectTimeout = 5000
             conn.readTimeout = 5000
             conn.doOutput = true
-            
+
             val body = json.encodeToString(ActionRequest(action, params))
             conn.outputStream.use { it.write(body.toByteArray()) }
-            
+
             val stream = if (conn.responseCode in 200..299) conn.inputStream else conn.errorStream
             stream.bufferedReader().use { it.readText() }
         } catch (e: Exception) {
@@ -145,9 +145,19 @@ class FakeMindstormsMcpClient : MindstormsMcpClient {
     }
 
     override suspend fun appendObservation(sessionId: String, text: String): BuilderSummary {
+        val likelyIssues = when {
+            text.contains("backward", true) -> listOf("motor_direction_reversed")
+            text.contains("did not move", true) || text.contains("not move", true) -> listOf("missing_motor_or_wrong_port")
+            text.contains("nothing happened", true) -> listOf("missing_motor_or_wrong_port")
+            else -> emptyList()
+        }
         return BuilderSummary(
-            likelyIssues = if (text.contains("backward", true)) listOf("motor_direction_reversed") else emptyList(),
-            nextActions = listOf("Check port connections", "Try reversing the motor in code"),
+            likelyIssues = likelyIssues,
+            nextActions = if (likelyIssues.contains("motor_direction_reversed")) {
+                listOf("Reverse the motor direction in code", "Run one short test again")
+            } else {
+                listOf("Check port connections", "Run one short low-power motor test")
+            },
             latestObservation = text
         )
     }
@@ -166,11 +176,49 @@ class FakeMindstormsMcpClient : MindstormsMcpClient {
     }
 
     override suspend fun generateCode(profileId: String, intent: String, target: String): String {
-        return when (intent) {
-            "beep" -> """import hub\nhub.sound.beep(440, 500)\nprint('Beep! ${profileId}')""" 
-            "drive" -> """import hub, time\nhub.port.A.motor.run_for_rotations(2, 50)\nhub.port.B.motor.run_for_rotations(2, 50)"""
-            "wave" -> """import hub, time\nfor i in range(3):\n    hub.port.A.motor.run_for_degrees(90, 30)\n    time.sleep_ms(300)\n    hub.port.A.motor.run_for_degrees(-90, 30)"""
-            else -> """import hub\nprint('Hello from ${profileId}!')"""
+        return when (target) {
+            "rcx-nqc" -> """
+                // Fake MCP code for $profileId
+                task main()
+                {
+                  PlayTone(440, 30);
+                }
+            """.trimIndent()
+            "arduino-basex" -> """
+                // Fake MCP BaseX sketch for $profileId
+                void setup() {
+                  Serial.begin(115200);
+                }
+                void loop() {
+                  Serial.println("$intent");
+                  delay(1000);
+                }
+            """.trimIndent()
+            else -> when (intent) {
+                "beep", "beep_hello" -> """
+                    import hub
+                    hub.sound.beep(440, 500)
+                    print('Beep! $profileId')
+                """.trimIndent()
+                "drive", "drive_forward" -> """
+                    import hub
+                    import time
+                    hub.port.A.motor.run_for_rotations(2, 50)
+                    hub.port.B.motor.run_for_rotations(2, 50)
+                """.trimIndent()
+                "wave" -> """
+                    import hub
+                    import time
+                    for i in range(3):
+                        hub.port.A.motor.run_for_degrees(90, 30)
+                        time.sleep_ms(300)
+                        hub.port.A.motor.run_for_degrees(-90, 30)
+                """.trimIndent()
+                else -> """
+                    import hub
+                    print('Hello from $profileId!')
+                """.trimIndent()
+            }
         }
     }
 }
