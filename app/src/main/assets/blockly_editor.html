@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>MINDSTORMS Blockly</title>
+  <title>WeDo Blockly</title>
   <script src="https://unpkg.com/blockly@9.3.3/blockly.min.js"></script>
   <script src="https://unpkg.com/blockly@9.3.3/python.js"></script>
   <style>
@@ -26,54 +26,46 @@
     body.kids #clearBtn { font-size: 18px; padding: 12px 20px; border-radius: 14px;
                           background: #f97316; color: #fff; box-shadow: 0 3px 0 #c2410c; }
     body.kids #statusMsg { font-size: 16px; color: #dbeafe; font-weight: 600; }
+    body.kids .blocklyTreeLabel { font-size: 18px; }
   </style>
 </head>
 <body>
 <div id="toolbar">
   <button id="runBtn">&#9654; Run</button>
-  <button id="clearBtn">&#128465; Clear</button>
+  <button id="clearBtn">Clear</button>
   <span id="statusMsg"></span>
 </div>
 <div id="blocklyDiv"></div>
 
 <!-- Simplified, kid-friendly toolbox (used in Simple Mode) -->
 <xml id="toolbox_kids" style="display:none">
-  <category name="&#128293; Light &amp; Sound" colour="#0ea5e9">
+  <category name="Light" colour="#0ea5e9">
     <block type="ms_hub_light"><field name="COLOR">green</field></block>
     <block type="ms_hub_light_off"></block>
-    <block type="ms_hub_beep">
-      <value name="FREQ"><block type="math_number"><field name="NUM">440</field></block></value>
-      <value name="DUR"><block type="math_number"><field name="NUM">0.5</field></block></value>
-    </block>
     <block type="ms_print">
-      <value name="MSG"><block type="text"><field name="TEXT">hello</field></block></value>
+      <value name="MSG"><block type="text"><field name="TEXT">WeDo ready</field></block></value>
     </block>
   </category>
-  <category name="&#128640; Move" colour="#10b981">
+  <category name="Move" colour="#10b981">
     <block type="ms_motor_run">
       <field name="PORT">A</field>
-      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
-      <value name="SECS"><block type="math_number"><field name="NUM">2</field></block></value>
-    </block>
-    <block type="ms_motor_degrees">
-      <field name="PORT">A</field>
-      <value name="DEGREES"><block type="math_number"><field name="NUM">360</field></block></value>
-      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
+      <value name="SPEED"><block type="math_number"><field name="NUM">35</field></block></value>
+      <value name="SECS"><block type="math_number"><field name="NUM">1</field></block></value>
     </block>
     <block type="ms_motor_stop"><field name="PORT">A</field></block>
     <block type="ms_pair_move">
       <field name="LEFT">A</field>
       <field name="RIGHT">B</field>
-      <value name="SPEED"><block type="math_number"><field name="NUM">50</field></block></value>
-      <value name="SECS"><block type="math_number"><field name="NUM">2</field></block></value>
+      <value name="SPEED"><block type="math_number"><field name="NUM">35</field></block></value>
+      <value name="SECS"><block type="math_number"><field name="NUM">1</field></block></value>
     </block>
   </category>
-  <category name="&#128260; Repeat &amp; Wait" colour="#8b5cf6">
+  <category name="Wait" colour="#8b5cf6">
     <block type="ms_wait">
       <value name="SECS"><block type="math_number"><field name="NUM">1</field></block></value>
     </block>
     <block type="controls_repeat_ext">
-      <value name="TIMES"><block type="math_number"><field name="NUM">5</field></block></value>
+      <value name="TIMES"><block type="math_number"><field name="NUM">3</field></block></value>
     </block>
   </category>
 </xml>
@@ -176,6 +168,11 @@
 <script>
 // ── Custom MINDSTORMS block definitions ──────────────────────────────────────
 
+const KIDS = new URLSearchParams(location.search).get("kids") === "1";
+const PORT_OPTIONS = KIDS
+  ? [["A","A"],["B","B"]]
+  : [["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]];
+
 const MS_BLOCKS = [
   // Hub: beep
   { type: "ms_hub_beep",
@@ -212,7 +209,7 @@ const MS_BLOCKS = [
   { type: "ms_motor_run",
     message0: "motor %1 run %2 % speed for %3 s",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+              options:PORT_OPTIONS },
             { type:"input_value", name:"SPEED", check:"Number" },
             { type:"input_value", name:"SECS",  check:"Number" }],
     previousStatement: null, nextStatement: null, colour: "#10b981",
@@ -221,7 +218,7 @@ const MS_BLOCKS = [
   { type: "ms_motor_degrees",
     message0: "motor %1 rotate %2 ° at %3 % speed",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+              options:PORT_OPTIONS },
             { type:"input_value", name:"DEGREES", check:"Number" },
             { type:"input_value", name:"SPEED",   check:"Number" }],
     previousStatement: null, nextStatement: null, colour: "#10b981",
@@ -230,20 +227,20 @@ const MS_BLOCKS = [
   { type: "ms_motor_start",
     message0: "motor %1 start at %2 % speed",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+              options:PORT_OPTIONS },
             { type:"input_value", name:"SPEED", check:"Number" }],
     previousStatement: null, nextStatement: null, colour: "#10b981" },
   // Motor: stop
   { type: "ms_motor_stop",
     message0: "motor %1 stop",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] }],
+              options:PORT_OPTIONS }],
     previousStatement: null, nextStatement: null, colour: "#10b981" },
   // MotorPair: move
   { type: "ms_pair_move",
     message0: "move (left %1 right %2) at %3 % for %4 s",
-    args0: [{ type:"field_dropdown", name:"LEFT",  options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
-            { type:"field_dropdown", name:"RIGHT", options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+    args0: [{ type:"field_dropdown", name:"LEFT",  options:PORT_OPTIONS },
+            { type:"field_dropdown", name:"RIGHT", options:PORT_OPTIONS },
             { type:"input_value", name:"SPEED", check:"Number" },
             { type:"input_value", name:"SECS",  check:"Number" }],
     previousStatement: null, nextStatement: null, colour: "#10b981",
@@ -251,8 +248,8 @@ const MS_BLOCKS = [
   // MotorPair: steer
   { type: "ms_pair_steer",
     message0: "steer (left %1 right %2) steering %3 at %4 % for %5 s",
-    args0: [{ type:"field_dropdown", name:"LEFT",  options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
-            { type:"field_dropdown", name:"RIGHT", options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+    args0: [{ type:"field_dropdown", name:"LEFT",  options:PORT_OPTIONS },
+            { type:"field_dropdown", name:"RIGHT", options:PORT_OPTIONS },
             { type:"input_value", name:"STEER", check:"Number" },
             { type:"input_value", name:"SPEED", check:"Number" },
             { type:"input_value", name:"SECS",  check:"Number" }],
@@ -261,13 +258,13 @@ const MS_BLOCKS = [
   { type: "ms_color_read",
     message0: "color sensor %1 color",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] }],
+              options:PORT_OPTIONS }],
     output: null, colour: "#f59e0b", tooltip: "Get detected color" },
   // Color sensor: is color
   { type: "ms_color_is",
     message0: "color sensor %1 is %2",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] },
+              options:PORT_OPTIONS },
             { type:"field_dropdown", name:"COLOR",
               options:[["red","Color.RED"],["green","Color.GREEN"],["blue","Color.BLUE"],
                        ["yellow","Color.YELLOW"],["black","Color.BLACK"],["white","Color.WHITE"],
@@ -277,13 +274,13 @@ const MS_BLOCKS = [
   { type: "ms_distance_read",
     message0: "distance sensor %1 mm",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] }],
+              options:PORT_OPTIONS }],
     output: "Number", colour: "#f59e0b", tooltip: "Distance in mm" },
   // Force sensor
   { type: "ms_force_read",
     message0: "force sensor %1 N",
     args0: [{ type:"field_dropdown", name:"PORT",
-              options:[["A","A"],["B","B"],["C","C"],["D","D"],["E","E"],["F","F"]] }],
+              options:PORT_OPTIONS }],
     output: "Number", colour: "#f59e0b" }
 ];
 
@@ -366,11 +363,10 @@ PY.forBlock["ms_force_read"] = function(b, gen) {
 
 // ── Workspace init ───────────────────────────────────────────────────────────
 
-const KIDS = new URLSearchParams(location.search).get("kids") === "1";
 if (KIDS) {
   document.body.classList.add("kids");
-  document.getElementById("runBtn").innerHTML = "&#9654; Run on Robot";
-  document.getElementById("statusMsg").textContent = "Drag blocks together, then tap Run!";
+  document.getElementById("runBtn").innerHTML = "&#9654; Make WeDo Code";
+  document.getElementById("statusMsg").textContent = "Use WeDo ports A and B. Keep the robot clear before running.";
 }
 
 const workspace = Blockly.inject("blocklyDiv", {
@@ -391,7 +387,45 @@ const workspace = Blockly.inject("blocklyDiv", {
 });
 
 // Generate Python with mindstorms imports header
+function generateWeDoPython() {
+  let code = Blockly.Python.workspaceToCode(workspace);
+  code = code
+    .replace(/hub\.status_light\.on\(Color\.([A-Z]+)\)/g, (_, color) => {
+      const colors = { GREEN: 6, RED: 9, ORANGE: 7, BLUE: 3, CYAN: 4, MAGENTA: 5, YELLOW: 8, WHITE: 10 };
+      return `hub.led(${colors[color] || 6})`;
+    })
+    .replace(/hub\.status_light\.off\(\)/g, "hub.led(0)")
+    .replace(/wait_for_seconds\(([^)]+)\)/g, "time.sleep($1)")
+    .replace(/motor_([ab])\.run_for_seconds\(([^,]+),\s*([^)]+)\)/g, (_, port, secs, speed) => {
+      return `motor_${port}.run_for_seconds(speed=max(-50, min(50, int(${speed}))), seconds=min(2, float(${secs})))`;
+    })
+    .replace(/motor_([ab])\.stop\(\)/g, "motor_$1.stop()")
+    .replace(/pair_ab\.move\(([^,]+),\s*'cm',\s*([^)]+)\)/g, (_, speed) => {
+      return [
+        `motor_a.start(speed=max(-50, min(50, int(${speed}))))`,
+        `motor_b.start(speed=max(-50, min(50, int(${speed}))))`,
+        `time.sleep(1)`,
+        `motor_a.stop()`,
+        `motor_b.stop()`
+      ].join("\n");
+    });
+
+  return [
+    "# WeDo 2.0 Blockly",
+    "# Target: WeDo 2.0 MicroPython hub module",
+    "# Use low speed and keep the robot clear before running.",
+    "import hub",
+    "import time",
+    "",
+    "motor_a = hub.port.A.motor",
+    "motor_b = hub.port.B.motor",
+    "",
+    code
+  ].join("\n");
+}
+
 function generatePython() {
+  if (KIDS) return generateWeDoPython();
   let code = Blockly.Python.workspaceToCode(workspace);
   // Determine which ports/pairs are used
   const usedPorts = new Set([...code.matchAll(/motor_([a-f])\./g)].map(m => m[1].toUpperCase()));

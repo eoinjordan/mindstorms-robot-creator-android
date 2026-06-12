@@ -3,6 +3,7 @@
     "id": "51515-blast",
     "name": "Blast",
     "kind": "humanoid_drive_launcher",
+    "family": "robot-inventor",
     "source": "pybricks + PDF_manuals/51515/51515_Blast.pdf",
     "confidence": "pybricks",
     "ports": [
@@ -42,6 +43,7 @@
     "id": "51515-charlie",
     "name": "Charlie",
     "kind": "humanoid_drive_companion",
+    "family": "robot-inventor",
     "source": "manual-image-inferred + PDF_manuals/51515/51515_Charlie.pdf",
     "confidence": "needs-confirmation",
     "ports": [
@@ -71,6 +73,7 @@
     "id": "51515-gelo",
     "name": "Gelo",
     "kind": "quadruped_walker",
+    "family": "robot-inventor",
     "source": "pybricks + PDF_manuals/51515/51515_Gelo.pdf",
     "confidence": "pybricks",
     "ports": [
@@ -110,6 +113,7 @@
     "id": "51515-mvp",
     "name": "M.V.P.",
     "kind": "modular_vehicle_platform",
+    "family": "robot-inventor",
     "source": "pybricks-basic-buggy + PDF_manuals/51515/51515_MVP.pdf",
     "confidence": "pybricks-basic-buggy",
     "ports": [
@@ -129,6 +133,7 @@
     "id": "51515-tricky",
     "name": "Tricky",
     "kind": "sports_drive_kicker",
+    "family": "robot-inventor",
     "source": "pybricks + PDF_manuals/51515/51515_Tricky.pdf",
     "confidence": "pybricks",
     "ports": [
@@ -156,6 +161,66 @@
         "port": "E",
         "type": "sensor",
         "role": "ball_or_line_detection"
+      }
+    ]
+  },
+  {
+    "id": "wedo2-milo",
+    "name": "Milo",
+    "kind": "science_rover",
+    "family": "wedo2",
+    "source": "Mindstorms Robot Creator WeDo 2.0 profile",
+    "confidence": "official-kit-profile",
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "drive_and_tilt"
+      },
+      {
+        "port": "B",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      }
+    ]
+  },
+  {
+    "id": "wedo2-kraz",
+    "name": "Kraz",
+    "kind": "animal_action",
+    "family": "wedo2",
+    "source": "Mindstorms Robot Creator WeDo 2.0 profile",
+    "confidence": "official-kit-profile",
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "body_action"
+      },
+      {
+        "port": "B",
+        "type": "sensor",
+        "role": "motion_trigger"
+      }
+    ]
+  },
+  {
+    "id": "wedo2-custom",
+    "name": "WeDo 2.0 Custom",
+    "kind": "custom_build",
+    "family": "wedo2",
+    "source": "Mindstorms Robot Creator WeDo 2.0 profile",
+    "confidence": "needs-confirmation",
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "motor_a"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "motor_b"
       }
     ]
   }

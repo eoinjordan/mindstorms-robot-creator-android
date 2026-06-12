@@ -17,6 +17,7 @@ class RobotAppTests {
                 "id": "test-robot",
                 "name": "Test Robot",
                 "kind": "test_kind",
+                "family": "wedo2",
                 "source": "test_source",
                 "confidence": "high",
                 "ports": [
@@ -34,6 +35,7 @@ class RobotAppTests {
         
         assertEquals(1, profiles.size)
         assertEquals("test-robot", profiles[0].id)
+        assertEquals("wedo2", profiles[0].family)
         assertEquals("A", profiles[0].ports[0].port)
     }
 

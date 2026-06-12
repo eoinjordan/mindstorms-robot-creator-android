@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
                 else HttpMindstormsMcpClient(serverUrl.value)
             }
 
-            var simpleMode by remember { mutableStateOf(prefs.getBoolean("simple_mode", false)) }
+            var simpleMode by remember { mutableStateOf(prefs.getBoolean("simple_mode", true)) }
+            var advancedMode by remember { mutableStateOf(prefs.getBoolean("advanced_mode", false)) }
 
             MainAppShell(
                 transport = currentTransport!!,
@@ -75,6 +76,11 @@ class MainActivity : ComponentActivity() {
                 onSetSimpleMode = { enabled ->
                     simpleMode = enabled
                     prefs.edit().putBoolean("simple_mode", enabled).apply()
+                },
+                advancedMode = advancedMode,
+                onSetAdvancedMode = { enabled ->
+                    advancedMode = enabled
+                    prefs.edit().putBoolean("advanced_mode", enabled).apply()
                 }
             )
         }
@@ -99,7 +105,9 @@ fun MainAppShell(
     onTransportChange: (Boolean) -> Unit,
     onRefreshSettings: () -> Unit,
     simpleMode: Boolean,
-    onSetSimpleMode: (Boolean) -> Unit
+    onSetSimpleMode: (Boolean) -> Unit,
+    advancedMode: Boolean,
+    onSetAdvancedMode: (Boolean) -> Unit
 ) {
     val darkTeal = Color(0xFF006A6A)
     MaterialTheme(
@@ -116,12 +124,18 @@ fun MainAppShell(
         val context = LocalContext.current
         val repository = remember { ProfileRepository(context) }
         val profiles = remember { repository.loadProfiles() }
-        var selectedProfile by remember { mutableStateOf(profiles.firstOrNull()) }
+        var selectedProfile by remember {
+            mutableStateOf(profiles.firstOrNull { it.family == "wedo2" } ?: profiles.firstOrNull())
+        }
+        val visibleScreens = remember(advancedMode) {
+            if (advancedMode) Screen.entries.toList()
+            else listOf(Screen.FLEET, Screen.BUILDER, Screen.CODE, Screen.SETTINGS)
+        }
 
         // Simple (Kids) Mode takes over the whole screen with a big Blockly canvas.
         if (simpleMode) {
             SimpleModeScreen(
-                profile = selectedProfile,
+                profile = selectedProfile ?: profiles.firstOrNull { it.family == "wedo2" },
                 onExitSimpleMode = { onSetSimpleMode(false) }
             )
             return@MaterialTheme
@@ -134,7 +148,7 @@ fun MainAppShell(
                         KidsModeButton(onClick = { onSetSimpleMode(true) }, compact = true)
                     }
                 ) {
-                    Screen.entries.forEach { screen ->
+                    visibleScreens.forEach { screen ->
                         NavigationRailItem(
                             selected = currentScreen == screen,
                             onClick = { currentScreen = screen },
@@ -154,7 +168,11 @@ fun MainAppShell(
                         selectedProfile = selectedProfile,
                         onProfileSelect = { selectedProfile = it },
                         onBack = { currentScreen = Screen.FLEET },
-                        onRefreshSettings = onRefreshSettings
+                        onRefreshSettings = onRefreshSettings,
+                        simpleMode = simpleMode,
+                        onSetSimpleMode = onSetSimpleMode,
+                        advancedMode = advancedMode,
+                        onSetAdvancedMode = onSetAdvancedMode
                     )
                 }
             }
@@ -165,7 +183,7 @@ fun MainAppShell(
                 },
                 bottomBar = {
                     NavigationBar {
-                        Screen.entries.forEach { screen ->
+                        visibleScreens.forEach { screen ->
                             NavigationBarItem(
                                 selected = currentScreen == screen,
                                 onClick = { currentScreen = screen },
@@ -187,7 +205,11 @@ fun MainAppShell(
                         selectedProfile = selectedProfile,
                         onProfileSelect = { selectedProfile = it },
                         onBack = { currentScreen = Screen.FLEET },
-                        onRefreshSettings = onRefreshSettings
+                        onRefreshSettings = onRefreshSettings,
+                        simpleMode = simpleMode,
+                        onSetSimpleMode = onSetSimpleMode,
+                        advancedMode = advancedMode,
+                        onSetAdvancedMode = onSetAdvancedMode
                     )
                 }
             }
@@ -227,7 +249,11 @@ fun ScreenContent(
     selectedProfile: RobotProfile?,
     onProfileSelect: (RobotProfile) -> Unit,
     onBack: () -> Unit,
-    onRefreshSettings: () -> Unit
+    onRefreshSettings: () -> Unit,
+    simpleMode: Boolean,
+    onSetSimpleMode: (Boolean) -> Unit,
+    advancedMode: Boolean,
+    onSetAdvancedMode: (Boolean) -> Unit
 ) {
     when (screen) {
         Screen.FLEET -> MindstormsFleetScreen(
@@ -257,6 +283,6 @@ fun ScreenContent(
         Screen.SETTINGS -> SettingsScreen(onBack = {
             onRefreshSettings()
             onBack()
-        })
+        }, simpleMode = simpleMode, onSimpleModeChange = onSetSimpleMode, advancedMode = advancedMode, onAdvancedModeChange = onSetAdvancedMode)
     }
 }

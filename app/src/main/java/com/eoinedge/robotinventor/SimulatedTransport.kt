@@ -11,7 +11,10 @@ class SimulatedTransport : RobotTransport {
         RobotDevice("51515-charlie", "Charlie", "Robot Inventor 51515", 86),
         RobotDevice("51515-gelo", "Gelo", "Robot Inventor 51515", 90),
         RobotDevice("51515-mvp", "M.V.P.", "Robot Inventor 51515", 84),
-        RobotDevice("51515-tricky", "Tricky", "Robot Inventor 51515", 91)
+        RobotDevice("51515-tricky", "Tricky", "Robot Inventor 51515", 91),
+        RobotDevice("wedo2-milo", "Milo", "WeDo 2.0 Smart Hub", 82),
+        RobotDevice("wedo2-kraz", "Kraz", "WeDo 2.0 Smart Hub", 80),
+        RobotDevice("wedo2-custom", "WeDo 2.0 Custom", "WeDo 2.0 Smart Hub", 78)
     )
 
     override suspend fun scan(): List<RobotDevice> {

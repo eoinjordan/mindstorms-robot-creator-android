@@ -11,6 +11,7 @@ data class RobotProfile(
     val kind: String,
     val source: String,
     val confidence: String,
+    val family: String = "robot-inventor",
     val ports: List<ProfilePort>
 )
 

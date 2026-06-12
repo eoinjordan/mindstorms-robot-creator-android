@@ -38,7 +38,7 @@ fun MindstormsFleetScreen(
         ) {
             item {
                 Text(
-                    text = "51515 Fleet",
+                    text = "Robot Fleet",
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
