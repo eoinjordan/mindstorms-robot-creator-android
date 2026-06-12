@@ -110,6 +110,28 @@ class AndroidFeatureCoverageTest {
     }
 
     @Test
+    fun blockEditorAssetIsOfflineAndAndroidBridgeReady() {
+        val file = listOf(
+            File("app/src/main/assets/blockly_editor.html"),
+            File("src/main/assets/blockly_editor.html")
+        ).firstOrNull { it.exists() }
+            ?: File("app/src/main/assets/blockly_editor.html")
+        assertTrue("Block editor asset is missing", file.exists())
+
+        val html = file.readText()
+        assertFalse("Android block editor must not depend on CDN scripts", html.contains("https://"))
+        assertFalse("Android block editor must not depend on external Blockly script loading", html.contains("unpkg.com"))
+        assertTrue(html.contains("id=\"palette\""))
+        assertTrue(html.contains("id=\"program\""))
+        assertTrue(html.contains("data-kind=\"motor\""))
+        assertTrue(html.contains("data-kind=\"pair\""))
+        assertTrue(html.contains("function generatePython()"))
+        assertTrue(html.contains("window.AndroidBridge.onRunCode"))
+        assertTrue(html.contains("window.getCode = getCode"))
+        assertTrue(html.contains("body.kids"))
+    }
+
+    @Test
     fun simulatedTransportCoversFamiliesAndRejectsUnsafeProbePlans() = runBlocking {
         val transport = SimulatedTransport()
         val devices = transport.scan()

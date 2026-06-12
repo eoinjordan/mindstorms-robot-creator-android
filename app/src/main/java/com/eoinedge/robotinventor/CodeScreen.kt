@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.background
@@ -524,6 +525,10 @@ fun BlocklyEditor(kidsMode: Boolean = false, onRunCode: (String) -> Unit) {
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
                 settings.javaScriptEnabled = true
+                settings.domStorageEnabled = true
+                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                settings.allowFileAccess = true
+                settings.allowContentAccess = true
                 webViewClient = WebViewClient()
                 addJavascriptInterface(object {
                     @JavascriptInterface
