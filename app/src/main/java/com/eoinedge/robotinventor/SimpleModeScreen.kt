@@ -98,10 +98,10 @@ fun SimpleModeScreen(
                 }
             } else {
                 BlocklyEditor(kidsMode = true) { code ->
-                    exportLmsFile(context, profile, "wedo-blocks", code)
+                    exportProgramFile(context, profile, "wedo-blocks", "wedo2-micropython", code)
                     scope.launch {
                         snackbarHostState.showSnackbar(
-                            "Program ready. Open it in the LEGO app or use the web app direct WeDo BLE run."
+                            "Program exported. Use the LEGO app, Pybricks, or the web app direct WeDo BLE run."
                         )
                     }
                 }

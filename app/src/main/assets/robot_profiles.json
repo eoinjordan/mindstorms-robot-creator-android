@@ -1,0 +1,536 @@
+[
+  {
+    "id": "wedo2-kraz",
+    "name": "Kraz",
+    "kind": "animal_action",
+    "family": "wedo2",
+    "kit": "LEGO Education WeDo 2.0 45300",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "profile",
+    "programTargets": [
+      "wedo2-micropython",
+      "pybricks-city"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "body_action"
+      },
+      {
+        "port": "B",
+        "type": "sensor",
+        "role": "motion_trigger"
+      }
+    ]
+  },
+  {
+    "id": "wedo2-milo",
+    "name": "Milo",
+    "kind": "science_rover",
+    "family": "wedo2",
+    "kit": "LEGO Education WeDo 2.0 45300",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "profile",
+    "programTargets": [
+      "wedo2-micropython",
+      "pybricks-city"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "drive_and_tilt"
+      },
+      {
+        "port": "B",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      }
+    ]
+  },
+  {
+    "id": "wedo2-custom",
+    "name": "WeDo 2.0 Custom",
+    "kind": "custom_build",
+    "family": "wedo2",
+    "kit": "LEGO Education WeDo 2.0 45300",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "needs-confirmation",
+    "programTargets": [
+      "wedo2-micropython",
+      "pybricks-city"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "motor_a"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "motor_b"
+      }
+    ]
+  },
+  {
+    "id": "51515-blast",
+    "name": "Blast",
+    "kind": "humanoid_drive_launcher",
+    "family": "robot-inventor",
+    "kit": "LEGO MINDSTORMS Robot Inventor 51515",
+    "source": "pybricks - https://pybricks.com/projects/sets/mindstorms-robot-inventor/main-models/blast/",
+    "confidence": "pybricks",
+    "programTargets": [
+      "pybricks-python",
+      "spike-stock"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "right_drive"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "action_launcher_or_hammer"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "left_drive"
+      },
+      {
+        "port": "D",
+        "type": "motor",
+        "role": "arm_lift"
+      },
+      {
+        "port": "E",
+        "type": "sensor",
+        "role": "color_detection"
+      },
+      {
+        "port": "F",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      }
+    ]
+  },
+  {
+    "id": "51515-charlie",
+    "name": "Charlie",
+    "kind": "humanoid_drive_companion",
+    "family": "robot-inventor",
+    "kit": "LEGO MINDSTORMS Robot Inventor 51515",
+    "source": "manual-image-inferred - The PDF is image-only. The profile uses inspected hub-wiring pages and should be confirmed against the LEGO app or physical build.",
+    "confidence": "needs-confirmation",
+    "programTargets": [
+      "spike-stock",
+      "pybricks-python"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "right_drive_or_body_motion"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "left_drive_or_body_motion"
+      },
+      {
+        "port": "E",
+        "type": "motor",
+        "role": "left_arm_or_head_motion"
+      },
+      {
+        "port": "F",
+        "type": "motor",
+        "role": "right_arm_or_head_motion"
+      }
+    ]
+  },
+  {
+    "id": "51515-gelo",
+    "name": "Gelo",
+    "kind": "quadruped_walker",
+    "family": "robot-inventor",
+    "kit": "LEGO MINDSTORMS Robot Inventor 51515",
+    "source": "pybricks - https://pybricks.com/projects/sets/mindstorms-robot-inventor/main-models/gelo/basic/",
+    "confidence": "pybricks",
+    "programTargets": [
+      "pybricks-python",
+      "spike-stock"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "rear_right_leg"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "rear_left_leg"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "front_right_leg"
+      },
+      {
+        "port": "D",
+        "type": "motor",
+        "role": "front_left_leg"
+      },
+      {
+        "port": "E",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      },
+      {
+        "port": "F",
+        "type": "sensor",
+        "role": "trick_selection"
+      }
+    ]
+  },
+  {
+    "id": "51515-mvp",
+    "name": "M.V.P.",
+    "kind": "modular_vehicle_platform",
+    "family": "robot-inventor",
+    "kit": "LEGO MINDSTORMS Robot Inventor 51515",
+    "source": "pybricks-basic-buggy - https://pybricks.com/projects/sets/mindstorms-robot-inventor/main-models/mvp/",
+    "confidence": "pybricks-basic-buggy",
+    "programTargets": [
+      "pybricks-python",
+      "spike-stock"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "steering"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "drive"
+      }
+    ]
+  },
+  {
+    "id": "51515-tricky",
+    "name": "Tricky",
+    "kind": "sports_drive_kicker",
+    "family": "robot-inventor",
+    "kit": "LEGO MINDSTORMS Robot Inventor 51515",
+    "source": "pybricks - https://pybricks.com/projects/sets/mindstorms-robot-inventor/main-models/tricky/",
+    "confidence": "pybricks",
+    "programTargets": [
+      "pybricks-python",
+      "spike-stock"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "drive_right_or_left_variant"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "drive_left_or_right_variant"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "kicker_or_attachment"
+      },
+      {
+        "port": "D",
+        "type": "sensor",
+        "role": "trigger_detection"
+      },
+      {
+        "port": "E",
+        "type": "sensor",
+        "role": "ball_or_line_detection"
+      }
+    ]
+  },
+  {
+    "id": "ev3-ev3rstorm",
+    "name": "EV3RSTORM",
+    "kind": "tracked_drive_shooter",
+    "family": "ev3",
+    "kit": "LEGO MINDSTORMS EV3 31313",
+    "source": "official-build-instructions - https://www.lego.com/en-us/themes/mindstorms/learntoprogram",
+    "confidence": "official-build-instructions",
+    "programTargets": [
+      "pybricks-ev3",
+      "ev3dev-python"
+    ],
+    "ports": [
+      {
+        "port": "1",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      },
+      {
+        "port": "4",
+        "type": "sensor",
+        "role": "color_detection"
+      },
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "blaster_arm"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "left_track_drive"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "right_track_drive"
+      }
+    ]
+  },
+  {
+    "id": "ev3-gripp3r",
+    "name": "GRIPP3R",
+    "kind": "gripper_drive",
+    "family": "ev3",
+    "kit": "LEGO MINDSTORMS EV3 31313",
+    "source": "official-build-instructions - https://www.lego.com/en-us/themes/mindstorms/learntoprogram",
+    "confidence": "official-build-instructions",
+    "programTargets": [
+      "pybricks-ev3",
+      "ev3dev-python"
+    ],
+    "ports": [
+      {
+        "port": "1",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      },
+      {
+        "port": "4",
+        "type": "sensor",
+        "role": "orientation"
+      },
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "gripper_claw"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "left_drive"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "right_drive"
+      }
+    ]
+  },
+  {
+    "id": "nxt-alpha-rex",
+    "name": "Alpha Rex",
+    "kind": "humanoid_biped_walker",
+    "family": "nxt",
+    "kit": "LEGO MINDSTORMS NXT 2.0 8547",
+    "source": "official-build-instructions - https://www.lego.com/en-us/themes/mindstorms/products/nxt-2-0-8547",
+    "confidence": "official-build-instructions",
+    "programTargets": [
+      "nxt-python"
+    ],
+    "ports": [
+      {
+        "port": "1",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      },
+      {
+        "port": "3",
+        "type": "sensor",
+        "role": "bump_detect"
+      },
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "right_leg"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "left_leg"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "arm_gesture"
+      }
+    ]
+  },
+  {
+    "id": "nxt-tribot",
+    "name": "Tribot",
+    "kind": "two_wheel_drive_claw",
+    "family": "nxt",
+    "kit": "LEGO MINDSTORMS NXT 1.0 8527",
+    "source": "official-build-instructions - https://www.lego.com/en-us/themes/mindstorms/products/nxt-1-0-8527",
+    "confidence": "official-build-instructions",
+    "programTargets": [
+      "nxt-python"
+    ],
+    "ports": [
+      {
+        "port": "1",
+        "type": "sensor",
+        "role": "obstacle_detection"
+      },
+      {
+        "port": "2",
+        "type": "sensor",
+        "role": "bump_detect"
+      },
+      {
+        "port": "3",
+        "type": "sensor",
+        "role": "line_following"
+      },
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "claw"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "left_drive"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "right_drive"
+      }
+    ]
+  },
+  {
+    "id": "rcx-pushbot",
+    "name": "Pushbot",
+    "kind": "two_wheel_drive_pusher",
+    "family": "rcx",
+    "kit": "LEGO MINDSTORMS RCX 3804 / 9747",
+    "source": "original-rcx-creator-building-set - Original MINDSTORMS (1998) two-motor differential drive. Reference port map from the official Creator building set.",
+    "confidence": "original-rcx-creator-building-set",
+    "programTargets": [
+      "rcx-nqc"
+    ],
+    "ports": [
+      {
+        "port": "1",
+        "type": "sensor",
+        "role": "bump_detect"
+      },
+      {
+        "port": "2",
+        "type": "sensor",
+        "role": "light_or_line"
+      },
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "right_drive"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "arm_or_attachment"
+      },
+      {
+        "port": "C",
+        "type": "motor",
+        "role": "left_drive"
+      }
+    ]
+  },
+  {
+    "id": "sim-gripper",
+    "name": "Simulated Motorized Gripper",
+    "kind": "gripper",
+    "family": "m5stack-basex",
+    "kit": "M5Stack Core2 + BaseX",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "profile",
+    "programTargets": [
+      "arduino-basex"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "jaw"
+      }
+    ]
+  },
+  {
+    "id": "sim-tracked-vehicle",
+    "name": "Simulated Tracked Vehicle",
+    "kind": "tracked_vehicle",
+    "family": "m5stack-basex",
+    "kit": "M5Stack Core2 + BaseX",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "profile",
+    "programTargets": [
+      "arduino-basex"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "left_track"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "right_track"
+      }
+    ]
+  },
+  {
+    "id": "sim-two-wheel-drive",
+    "name": "Simulated Two Wheel Drive Base",
+    "kind": "two_wheel_drive",
+    "family": "m5stack-basex",
+    "kit": "M5Stack Core2 + BaseX",
+    "source": "Mindstorms Robot Creator profile",
+    "confidence": "profile",
+    "programTargets": [
+      "arduino-basex"
+    ],
+    "ports": [
+      {
+        "port": "A",
+        "type": "motor",
+        "role": "left_drive"
+      },
+      {
+        "port": "B",
+        "type": "motor",
+        "role": "right_drive"
+      }
+    ]
+  }
+]

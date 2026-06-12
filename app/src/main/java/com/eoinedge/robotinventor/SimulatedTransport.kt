@@ -7,14 +7,22 @@ import kotlin.random.Random
 
 class SimulatedTransport : RobotTransport {
     private val simulatedDevices = listOf(
+        RobotDevice("wedo2-milo", "Milo", "WeDo 2.0 Smart Hub", 82),
+        RobotDevice("wedo2-kraz", "Kraz", "WeDo 2.0 Smart Hub", 80),
+        RobotDevice("wedo2-custom", "WeDo 2.0 Custom", "WeDo 2.0 Smart Hub", 78),
         RobotDevice("51515-blast", "Blast", "Robot Inventor 51515", 88),
         RobotDevice("51515-charlie", "Charlie", "Robot Inventor 51515", 86),
         RobotDevice("51515-gelo", "Gelo", "Robot Inventor 51515", 90),
         RobotDevice("51515-mvp", "M.V.P.", "Robot Inventor 51515", 84),
         RobotDevice("51515-tricky", "Tricky", "Robot Inventor 51515", 91),
-        RobotDevice("wedo2-milo", "Milo", "WeDo 2.0 Smart Hub", 82),
-        RobotDevice("wedo2-kraz", "Kraz", "WeDo 2.0 Smart Hub", 80),
-        RobotDevice("wedo2-custom", "WeDo 2.0 Custom", "WeDo 2.0 Smart Hub", 78)
+        RobotDevice("ev3-ev3rstorm", "EV3RSTORM", "EV3 Brick", 72),
+        RobotDevice("ev3-gripp3r", "GRIPP3R", "EV3 Brick", 73),
+        RobotDevice("nxt-alpha-rex", "Alpha Rex", "NXT Brick", 66),
+        RobotDevice("nxt-tribot", "Tribot", "NXT Brick", 68),
+        RobotDevice("rcx-pushbot", "Pushbot", "RCX IR Tower", 55),
+        RobotDevice("sim-two-wheel-drive", "Simulated Two Wheel Drive Base", "M5Stack BaseX", 100),
+        RobotDevice("sim-tracked-vehicle", "Simulated Tracked Vehicle", "M5Stack BaseX", 100),
+        RobotDevice("sim-gripper", "Simulated Motorized Gripper", "M5Stack BaseX", 100)
     )
 
     override suspend fun scan(): List<RobotDevice> {
@@ -35,15 +43,15 @@ class SimulatedTransport : RobotTransport {
     override suspend fun describe(): RobotDescription {
         return RobotDescription(
             ports = listOf(
-                RobotPort("Port A", "51515 motor"),
-                RobotPort("Port B", "51515 motor"),
-                RobotPort("Port C", "51515 motor/sensor"),
-                RobotPort("Port D", "51515 motor/sensor"),
-                RobotPort("Port E", "51515 color/distance/motor"),
-                RobotPort("Port F", "51515 color/distance/motor")
+                RobotPort("A", "motor"),
+                RobotPort("B", "motor"),
+                RobotPort("C", "motor or sensor"),
+                RobotPort("1", "legacy sensor"),
+                RobotPort("2", "legacy sensor"),
+                RobotPort("IR", "RCX infrared tower")
             ),
             firmwareVersion = "1.0.0-sim",
-            capabilities = listOf("probes", "telemetry", "motors")
+            capabilities = listOf("profiles", "code generation", "simulated probes", "manual handoff")
         )
     }
 

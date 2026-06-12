@@ -2,38 +2,63 @@ package com.eoinedge.robotinventor
 
 import android.content.Context
 import android.content.Intent
+import android.view.ViewGroup
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-import android.view.ViewGroup
-import android.webkit.JavascriptInterface
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.ui.viewinterop.AndroidView
-
 private val INTENTS = listOf("beep", "drive", "wave", "probe")
 
-@OptIn(ExperimentalMaterial3Api::class)
+private data class CodeTarget(val value: String, val label: String)
+
 @Composable
 fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
     if (profile == null) {
@@ -43,9 +68,10 @@ fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
         return
     }
 
-    var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Python", "Blocks")
-    val scope = rememberCoroutineScope()
+    var selectedTab by remember(profile.id) { mutableStateOf(if (profile.family == "wedo2") 1 else 0) }
+    val tabs = listOf("Code", "Blocks")
+    val context = LocalContext.current
+    var blockStatus by remember(profile.id) { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize()) {
         TabRow(selectedTabIndex = selectedTab) {
@@ -59,39 +85,47 @@ fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
         }
 
         if (selectedTab == 0) {
-            PythonEditor(profile, mcpClient)
+            CodeEditor(profile, mcpClient)
         } else {
-            BlocklyEditor(onRunCode = { code ->
-                scope.launch { /* BLE/MCP dispatch placeholder */ }
-            })
+            blockStatus?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+            BlocklyEditor(kidsMode = profile.family == "wedo2") { code ->
+                exportProgramFile(context, profile, "blocks", blockTargetFor(profile), code)
+                blockStatus = "Exported ${downloadName(profile, "blocks", blockTargetFor(profile))}"
+            }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
+fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val targets = remember(profile.id) { targetsFor(profile) }
 
-    var selectedIntent by remember { mutableStateOf(INTENTS[0]) }
+    var selectedIntent by remember(profile.id) { mutableStateOf(INTENTS[0]) }
+    var selectedTarget by remember(profile.id) { mutableStateOf(targets.first().value) }
     var intentMenuExpanded by remember { mutableStateOf(false) }
-    var code by remember {
-        mutableStateOf(defaultCode(profile, INTENTS[0]))
-    }
+    var targetMenuExpanded by remember { mutableStateOf(false) }
+    var code by remember(profile.id) { mutableStateOf(defaultCode(profile, INTENTS[0], selectedTarget)) }
     var isGenerating by remember { mutableStateOf(false) }
     var exportStatus by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        // Intent selector + action row
         Row(
             Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Intent dropdown
             ExposedDropdownMenuBox(
                 expanded = intentMenuExpanded,
                 onExpandedChange = { intentMenuExpanded = !intentMenuExpanded }
@@ -103,10 +137,10 @@ fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
                     label = { Text("Intent") },
                     trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
                     modifier = Modifier
-                        .width(140.dp)
+                        .width(116.dp)
                         .menuAnchor()
                 )
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = intentMenuExpanded,
                     onDismissRequest = { intentMenuExpanded = false }
                 ) {
@@ -116,23 +150,64 @@ fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
                             onClick = {
                                 selectedIntent = intent
                                 intentMenuExpanded = false
-                                code = defaultCode(profile, intent)
+                                code = defaultCode(profile, intent, selectedTarget)
                             }
                         )
                     }
                 }
             }
 
-            Spacer(Modifier.width(8.dp))
+            ExposedDropdownMenuBox(
+                expanded = targetMenuExpanded,
+                onExpandedChange = { targetMenuExpanded = !targetMenuExpanded }
+            ) {
+                OutlinedTextField(
+                    value = targets.first { it.value == selectedTarget }.label,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Target") },
+                    trailingIcon = { Icon(Icons.Default.ArrowDropDown, null) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .menuAnchor()
+                )
+                DropdownMenu(
+                    expanded = targetMenuExpanded,
+                    onDismissRequest = { targetMenuExpanded = false }
+                ) {
+                    targets.forEach { target ->
+                        DropdownMenuItem(
+                            text = { Text(target.label) },
+                            onClick = {
+                                selectedTarget = target.value
+                                targetMenuExpanded = false
+                                code = defaultCode(profile, selectedIntent, target.value)
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
-            // Generate button
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Button(
                 onClick = {
                     isGenerating = true
                     scope.launch {
                         try {
-                            val generated = mcpClient.generateCode(profile.id, selectedIntent)
-                            if (generated.isNotBlank()) code = generated
+                            val generated = mcpClient.generateCode(
+                                profile.id,
+                                serverIntent(selectedIntent),
+                                selectedTarget
+                            )
+                            if (generated.isNotBlank() && !generated.contains("\"ok\": false")) code = generated
+                        } catch (_: Exception) {
+                            code = defaultCode(profile, selectedIntent, selectedTarget)
                         } finally {
                             isGenerating = false
                         }
@@ -140,27 +215,21 @@ fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
                 },
                 enabled = !isGenerating
             ) {
-                if (isGenerating) {
-                    CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                } else {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                }
+                if (isGenerating) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                else Icon(Icons.Default.PlayArrow, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
                 Text("Generate")
             }
 
-            Spacer(Modifier.width(8.dp))
-
-            // Export .lms button
             OutlinedButton(
                 onClick = {
-                    exportLmsFile(context, profile, selectedIntent, code)
-                    exportStatus = "Exported as ${profile.id}-$selectedIntent.lms"
+                    exportProgramFile(context, profile, selectedIntent, selectedTarget, code)
+                    exportStatus = "Exported ${downloadName(profile, selectedIntent, selectedTarget)}"
                 }
             ) {
                 Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
-                Text("Export .lms")
+                Text("Export")
             }
         }
 
@@ -169,13 +238,10 @@ fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
                 it,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 12.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
 
-        Spacer(Modifier.height(4.dp))
-
-        // Code display
         Box(
             Modifier
                 .weight(1f)
@@ -194,117 +260,236 @@ fun PythonEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
     }
 }
 
-/** Profile-aware fallback code generated locally when no server is available. */
-private fun defaultCode(profile: RobotProfile, intent: String): String {
-    val ports = profile.ports.joinToString("\n") { "# Port ${it.port}: ${it.role} (${it.type})" }
-    return when (intent) {
-        "beep" -> """
-# ${profile.name} - Beep intent (Pybricks)
-from pybricks.hubs import InventorHub
-from pybricks.tools import wait
+private fun targetsFor(profile: RobotProfile): List<CodeTarget> {
+    val values = if (profile.programTargets.isNotEmpty()) profile.programTargets else when (profile.family) {
+        "wedo2" -> listOf("wedo2-micropython", "pybricks-city")
+        "robot-inventor", "spike-prime" -> listOf("lego-stock-python", "pybricks-python")
+        "ev3" -> listOf("pybricks-ev3", "ev3dev-python")
+        "nxt" -> listOf("nxt-python")
+        "rcx" -> listOf("rcx-nqc")
+        "m5stack-basex" -> listOf("arduino-basex")
+        else -> listOf("pybricks-python")
+    }
+    return values.map { CodeTarget(it, targetLabel(it)) }
+}
 
-hub = InventorHub()
-$ports
+private fun targetLabel(target: String): String = when (target) {
+    "wedo2-micropython" -> "WeDo 2.0 App"
+    "pybricks-city" -> "Pybricks CityHub"
+    "lego-stock-python" -> "LEGO App Python"
+    "spike-stock" -> "LEGO/SPIKE App Python"
+    "pybricks-python" -> "Pybricks Python"
+    "pybricks-ev3" -> "Pybricks EV3"
+    "ev3dev-python" -> "ev3dev Python"
+    "nxt-python" -> "NXT Python"
+    "rcx-nqc" -> "RCX NQC"
+    "arduino-basex" -> "M5Stack BaseX Arduino"
+    else -> target
+}
 
-hub.speaker.beep(440, 500)
-wait(200)
-hub.speaker.beep(880, 300)
-        """.trimIndent()
+private fun blockTargetFor(profile: RobotProfile): String = when (profile.family) {
+    "wedo2" -> "wedo2-micropython"
+    "rcx" -> "rcx-nqc"
+    "nxt" -> "nxt-python"
+    "ev3" -> "ev3dev-python"
+    "m5stack-basex" -> "arduino-basex"
+    else -> "lego-stock-python"
+}
 
-        "drive" -> {
-            val motorA = profile.ports.firstOrNull { "drive" in it.role.lowercase() || it.role == "left_drive" }?.port ?: "A"
-            val motorB = profile.ports.firstOrNull { it.role == "right_drive" }?.port ?: "B"
-            """
-# ${profile.name} - Drive intent (Pybricks)
-from pybricks.hubs import InventorHub
-from pybricks.pupdevices import Motor
-from pybricks.parameters import Port, Direction
-from pybricks.tools import wait
+private fun serverIntent(intent: String): String = when (intent) {
+    "beep" -> "beep_hello"
+    "drive" -> "drive_forward"
+    "probe" -> "safe_probe"
+    else -> intent
+}
 
-hub = InventorHub()
-$ports
+private fun extensionFor(target: String): String = when (target) {
+    "lego-stock-python", "spike-stock" -> "lms"
+    "rcx-nqc" -> "nqc"
+    "arduino-basex" -> "ino"
+    else -> "py"
+}
 
-left  = Motor(Port.$motorA, Direction.COUNTERCLOCKWISE)
-right = Motor(Port.$motorB)
+private fun downloadName(profile: RobotProfile, intent: String, target: String): String {
+    val safeIntent = intent.replace(Regex("[^A-Za-z0-9_-]"), "-")
+    return "${profile.id}-$safeIntent.${extensionFor(target)}"
+}
 
-# Drive forward 500 mm, then stop
-left.run_time(300, 2000)
-right.run_time(300, 2000)
-wait(2200)
-left.stop()
-right.stop()
-            """.trimIndent()
-        }
-
-        "wave" -> {
-            val armPort = profile.ports.firstOrNull { "arm" in it.role.lowercase() || "wave" in it.role.lowercase() }?.port ?: "C"
-            """
-# ${profile.name} - Wave intent (Pybricks)
-from pybricks.hubs import InventorHub
-from pybricks.pupdevices import Motor
-from pybricks.parameters import Port
-from pybricks.tools import wait
-
-hub = InventorHub()
-$ports
-
-arm = Motor(Port.$armPort)
-hub.speaker.beep(660, 200)
-
-for _ in range(3):
-    arm.run_angle(200, 45)
-    wait(150)
-    arm.run_angle(200, -45)
-    wait(150)
-
-arm.stop()
-            """.trimIndent()
-        }
-
-        "probe" -> """
-# ${profile.name} - Probe intent (Pybricks)
-from pybricks.hubs import InventorHub
-from pybricks.pupdevices import Motor
-from pybricks.parameters import Port
-from pybricks.tools import wait, StopWatch
-
-hub = InventorHub()
-$ports
-
-# Safe low-power step response probe
-watch = StopWatch()
-results = []
-
-for port_letter in [${profile.ports.joinToString(", ") { "\"${it.port}\"" }}]:
-    try:
-        m = Motor(getattr(Port, port_letter))
-        watch.reset()
-        m.run_time(150, 500)      # gentle 15% duty, 0.5 s
-        elapsed = watch.time()
-        results.append((port_letter, m.angle(), elapsed))
-        m.stop()
-        wait(300)
-    except Exception as e:
-        results.append((port_letter, None, str(e)))
-
-for r in results:
-    print(r)
-        """.trimIndent()
-
-        else -> """
-# ${profile.name} — Default program
-from pybricks.hubs import InventorHub
-hub = InventorHub()
-$ports
-print("Hello from ${profile.name}!")
-        """.trimIndent()
+private fun defaultCode(profile: RobotProfile, intent: String, target: String): String {
+    return when (target) {
+        "wedo2-micropython" -> wedoCode(profile, intent)
+        "pybricks-city" -> cityHubPybricksCode(profile, intent)
+        "pybricks-ev3", "ev3dev-python" -> ev3Code(profile, intent, target)
+        "nxt-python" -> nxtCode(profile, intent)
+        "rcx-nqc" -> rcxCode(profile, intent)
+        "arduino-basex" -> basexCode(profile, intent)
+        else -> inventorCode(profile, intent)
     }
 }
 
-/**
- * Packages the Python code as a minimal .lms ZIP archive and shares it
- * via the Android share sheet so users can open it in the LEGO app.
- */
+private fun header(profile: RobotProfile, target: String): String {
+    val ports = profile.ports.joinToString("\n") { "# Port ${it.port}: ${it.role} (${it.type})" }
+    return "# ${profile.name} - ${profile.kit.ifBlank { profile.family }}\n# Target: $target\n$ports\n"
+}
+
+private fun motors(profile: RobotProfile): List<ProfilePort> = profile.ports.filter { it.type == "motor" }
+
+private fun firstMotor(profile: RobotProfile, fallback: String = "A"): String =
+    motors(profile).firstOrNull()?.port ?: fallback
+
+private fun driveMotors(profile: RobotProfile): List<ProfilePort> =
+    motors(profile).filter { it.role.contains("drive", true) || it.role.contains("track", true) || it.role.contains("wheel", true) }
+        .ifEmpty { motors(profile).take(2) }
+
+private fun varName(role: String): String =
+    role.replace(Regex("[^A-Za-z0-9]+"), "_").trim('_').lowercase().ifBlank { "motor" }
+
+private fun wedoCode(profile: RobotProfile, intent: String): String {
+    val bindings = motors(profile).joinToString("\n") { "${varName(it.role)} = hub.port.${it.port}.motor" }
+    val mainMotor = varName(motors(profile).firstOrNull()?.role ?: "motor_a")
+    val drive = driveMotors(profile).map { varName(it.role) }
+    val body = when (intent) {
+        "beep" -> "hub.led(6)\ntime.sleep(0.5)\nhub.led(0)"
+        "drive" -> (drive.ifEmpty { listOf(mainMotor) }).joinToString("\n") { "$it.start(speed=35)" } +
+            "\ntime.sleep(1)\n" + (drive.ifEmpty { listOf(mainMotor) }).joinToString("\n") { "$it.stop()" }
+        "wave" -> "for _ in range(3):\n    $mainMotor.run_for_seconds(speed=35, seconds=0.3)\n    time.sleep(0.1)\n    $mainMotor.run_for_seconds(speed=-35, seconds=0.3)"
+        else -> "$mainMotor.run_for_seconds(speed=30, seconds=0.5)\ntime.sleep(0.2)\n$mainMotor.run_for_seconds(speed=-30, seconds=0.5)\n$mainMotor.stop()"
+    }
+    return """
+${header(profile, "WeDo 2.0 MicroPython")}
+import hub
+import time
+
+$bindings
+
+$body
+""".trimIndent()
+}
+
+private fun cityHubPybricksCode(profile: RobotProfile, intent: String): String {
+    val port = firstMotor(profile)
+    return """
+${header(profile, "Pybricks CityHub")}
+from pybricks.hubs import CityHub
+from pybricks.pupdevices import Motor
+from pybricks.parameters import Port, Color
+from pybricks.tools import wait
+
+hub = CityHub()
+motor = Motor(Port.$port)
+
+${pybricksMotorBody(intent)}
+""".trimIndent()
+}
+
+private fun inventorCode(profile: RobotProfile, intent: String): String {
+    val port = firstMotor(profile)
+    return """
+${header(profile, "Pybricks/LEGO hub Python")}
+from pybricks.hubs import InventorHub
+from pybricks.pupdevices import Motor
+from pybricks.parameters import Port
+from pybricks.tools import wait
+
+hub = InventorHub()
+motor = Motor(Port.$port)
+
+${pybricksMotorBody(intent)}
+""".trimIndent()
+}
+
+private fun ev3Code(profile: RobotProfile, intent: String, target: String): String {
+    val port = firstMotor(profile, "B")
+    val hubClass = if (target == "pybricks-ev3") "EV3Brick" else "EV3Brick"
+    return """
+${header(profile, target)}
+from pybricks.hubs import $hubClass
+from pybricks.ev3devices import Motor
+from pybricks.parameters import Port
+from pybricks.tools import wait
+
+ev3 = $hubClass()
+motor = Motor(Port.$port)
+
+${pybricksMotorBody(intent)}
+""".trimIndent()
+}
+
+private fun pybricksMotorBody(intent: String): String = when (intent) {
+    "beep" -> "hub.speaker.beep(440, 300) if 'hub' in globals() else ev3.speaker.beep()"
+    "drive" -> "motor.run_time(250, 1000)\nmotor.stop()"
+    "wave" -> "for _ in range(3):\n    motor.run_angle(250, 45)\n    wait(100)\n    motor.run_angle(250, -45)"
+    else -> "motor.run_time(150, 500)\nwait(200)\nmotor.run_time(-150, 500)\nmotor.stop()"
+}
+
+private fun nxtCode(profile: RobotProfile, intent: String): String {
+    val port = firstMotor(profile)
+    return """
+${header(profile, "nxt-python")}
+import nxt.locator
+from nxt.motor import Port, Motor
+import time
+
+brick = nxt.locator.find()
+motor = Motor(brick, Port.$port)
+
+${when (intent) {
+        "drive" -> "motor.run(50)\ntime.sleep(1)\nmotor.brake()"
+        "wave" -> "for _ in range(3):\n    motor.turn(50, 45)\n    motor.turn(50, -45)"
+        "beep" -> "brick.play_tone(440, 300)"
+        else -> "motor.run(35)\ntime.sleep(0.5)\nmotor.brake()"
+    }}
+""".trimIndent()
+}
+
+private fun rcxCode(profile: RobotProfile, intent: String): String {
+    val drive = driveMotors(profile).map { "OUT_${it.port}" }.ifEmpty { listOf("OUT_A") }
+    val outs = drive.joinToString(" + ")
+    return """
+// ${profile.name} - RCX NQC
+// Target: rcx-nqc
+task main()
+{
+${when (intent) {
+        "beep" -> "  PlayTone(440, 30);"
+        "drive" -> "  OnFwd($outs);\n  Wait(100);\n  Off($outs);"
+        "wave" -> "  repeat(3) {\n    OnFwd(${drive.first()}); Wait(30);\n    OnRev(${drive.first()}); Wait(30);\n    Off(${drive.first()});\n  }"
+        else -> "  OnFwd(${drive.first()}); Wait(50); Off(${drive.first()});"
+    }}
+}
+""".trimIndent()
+}
+
+private fun basexCode(profile: RobotProfile, intent: String): String {
+    return """
+// ${profile.name} - M5Stack BaseX Arduino sketch
+// Target: arduino-basex
+// Keep duty low and stop all motors after each test.
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  // TODO: connect to the BaseX adapter firmware command set.
+  // Intent: $intent
+  Serial.println("Run safe BaseX test for ${profile.id}");
+  delay(1000);
+}
+""".trimIndent()
+}
+
+internal fun exportProgramFile(context: Context, profile: RobotProfile, intent: String, target: String, code: String) {
+    val ext = extensionFor(target)
+    if (ext == "lms") {
+        exportLmsFile(context, profile, intent, code)
+        return
+    }
+    val dir = File(context.cacheDir, "program_exports").also { it.mkdirs() }
+    val file = File(dir, downloadName(profile, intent, target))
+    file.writeText(code)
+    shareFile(context, file, "text/plain", "${profile.name} - ${file.name}")
+}
+
 internal fun exportLmsFile(context: Context, profile: RobotProfile, intent: String, code: String) {
     val dir = File(context.cacheDir, "lms_exports").also { it.mkdirs() }
     val file = File(dir, "${profile.id}-$intent.lms")
@@ -315,19 +500,18 @@ internal fun exportLmsFile(context: Context, profile: RobotProfile, intent: Stri
         zip.closeEntry()
     }
 
-    val uri = FileProvider.getUriForFile(
-        context,
-        "${context.packageName}.fileprovider",
-        file
-    )
+    shareFile(context, file, "application/octet-stream", "${profile.name} - $intent.lms")
+}
 
+private fun shareFile(context: Context, file: File, mimeType: String, subject: String) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "application/octet-stream"
+        type = mimeType
         putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_SUBJECT, "${profile.name} - $intent.lms")
+        putExtra(Intent.EXTRA_SUBJECT, subject)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
-    context.startActivity(Intent.createChooser(shareIntent, "Open in LEGO App"))
+    context.startActivity(Intent.createChooser(shareIntent, "Share robot program"))
 }
 
 @Composable

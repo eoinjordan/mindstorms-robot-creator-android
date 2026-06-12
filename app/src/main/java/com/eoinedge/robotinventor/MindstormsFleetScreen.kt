@@ -116,6 +116,11 @@ fun MindstormsFleetScreen(
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(profile.name, color = Color.White, fontWeight = FontWeight.Bold)
                         Text(
+                            familyLabel(profile.family),
+                            color = Color(0xFFBFEAEA),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
                             profile.kind,
                             color = Color(0xFFD9E5E5),
                             style = MaterialTheme.typography.bodySmall
@@ -139,10 +144,14 @@ fun MindstormsFleetScreen(
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(profile.kind, style = MaterialTheme.typography.titleMedium)
+                    Text("${familyLabel(profile.family)} - ${profile.kind}", style = MaterialTheme.typography.titleMedium)
+                    if (profile.kit.isNotBlank()) Text(profile.kit, style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Source: ${profile.source}")
                     Text("Confidence: ${profile.confidence}")
+                    if (profile.programTargets.isNotEmpty()) {
+                        Text("Targets: ${profile.programTargets.joinToString(", ")}")
+                    }
                     if (profile.confidence.contains("needs", ignoreCase = true)) {
                         Text(
                             text = "Confirm this profile against the LEGO app or the physical build.",
@@ -162,4 +171,15 @@ fun MindstormsFleetScreen(
             Text("No profile selected")
         }
     }
+}
+
+private fun familyLabel(family: String): String = when (family) {
+    "wedo2" -> "WeDo 2.0"
+    "robot-inventor" -> "Robot Inventor 51515"
+    "spike-prime" -> "SPIKE Prime"
+    "ev3" -> "EV3"
+    "nxt" -> "NXT"
+    "rcx" -> "RCX"
+    "m5stack-basex" -> "M5Stack BaseX"
+    else -> family
 }

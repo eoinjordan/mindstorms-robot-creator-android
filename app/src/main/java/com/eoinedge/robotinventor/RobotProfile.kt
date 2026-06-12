@@ -12,6 +12,8 @@ data class RobotProfile(
     val source: String,
     val confidence: String,
     val family: String = "robot-inventor",
+    val kit: String = "",
+    val programTargets: List<String> = emptyList(),
     val ports: List<ProfilePort>
 )
 
@@ -31,7 +33,11 @@ class ProfileRepository(private val context: Context) {
 
     fun loadProfiles(): List<RobotProfile> {
         return try {
-            val jsonString = context.assets.open("robot_profiles_51515.json").bufferedReader().use { it.readText() }
+            val jsonString = try {
+                context.assets.open("robot_profiles.json").bufferedReader().use { it.readText() }
+            } catch (_: Exception) {
+                context.assets.open("robot_profiles_51515.json").bufferedReader().use { it.readText() }
+            }
             parseProfiles(jsonString)
         } catch (e: Exception) {
             e.printStackTrace()
