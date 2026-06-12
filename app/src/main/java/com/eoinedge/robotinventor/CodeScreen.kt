@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -61,7 +62,7 @@ private val INTENTS = listOf("beep", "drive", "wave", "probe")
 internal data class CodeTarget(val value: String, val label: String)
 
 @Composable
-fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
+fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient, transport: RobotTransport? = null) {
     if (profile == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Select a robot in the Fleet tab first.")
@@ -86,7 +87,7 @@ fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
         }
 
         if (selectedTab == 0) {
-            CodeEditor(profile, mcpClient)
+            CodeEditor(profile, mcpClient, transport)
         } else {
             blockStatus?.let {
                 Text(
@@ -106,7 +107,7 @@ fun CodeScreen(profile: RobotProfile?, mcpClient: MindstormsMcpClient) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
+fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient, transport: RobotTransport? = null) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val targets = remember(profile.id) { targetsFor(profile) }
@@ -117,6 +118,7 @@ fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
     var targetMenuExpanded by remember { mutableStateOf(false) }
     var code by remember(profile.id) { mutableStateOf(defaultCode(profile, INTENTS[0], selectedTarget)) }
     var isGenerating by remember { mutableStateOf(false) }
+    var isDeploying by remember { mutableStateOf(false) }
     var exportStatus by remember { mutableStateOf<String?>(null) }
 
     Column(Modifier.fillMaxSize()) {
@@ -231,6 +233,32 @@ fun CodeEditor(profile: RobotProfile, mcpClient: MindstormsMcpClient) {
                 Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(4.dp))
                 Text("Export")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    val deployer = transport as? ProgramDeployTransport
+                    if (deployer == null) {
+                        exportStatus = "Bluetooth flash is not available for the selected transport."
+                        return@OutlinedButton
+                    }
+                    isDeploying = true
+                    scope.launch {
+                        val result = try {
+                            deployer.deployProgram(profile, code)
+                        } catch (e: Exception) {
+                            ProgramDeployResult(false, "Bluetooth flash/run failed: ${e.message}")
+                        }
+                        exportStatus = result.message
+                        isDeploying = false
+                    }
+                },
+                enabled = !isDeploying
+            ) {
+                if (isDeploying) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                else Icon(Icons.Default.Settings, contentDescription = null)
+                Spacer(Modifier.width(4.dp))
+                Text("Flash BLE")
             }
         }
 

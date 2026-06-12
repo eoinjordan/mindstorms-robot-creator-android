@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         simulatedTransport = SimulatedTransport()
         bleTransport = SpikeBleTransport(this)
         currentTransport = simulatedTransport
@@ -120,7 +120,7 @@ fun MainAppShell(
         var currentScreen by remember { mutableStateOf(Screen.FLEET) }
         val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
         val isExpanded = windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
-        
+
         val context = LocalContext.current
         val repository = remember { ProfileRepository(context) }
         val profiles = remember { repository.loadProfiles() }
@@ -136,6 +136,7 @@ fun MainAppShell(
         if (simpleMode) {
             SimpleModeScreen(
                 profile = selectedProfile ?: profiles.firstOrNull { it.family == "wedo2" },
+                transport = transport,
                 onExitSimpleMode = { onSetSimpleMode(false) }
             )
             return@MaterialTheme
@@ -277,7 +278,8 @@ fun ScreenContent(
         )
         Screen.CODE -> CodeScreen(
             profile = selectedProfile,
-            mcpClient = mcpClient
+            mcpClient = mcpClient,
+            transport = transport
         )
         Screen.DATA -> SessionHistoryScreen(onBack = onBack)
         Screen.SETTINGS -> SettingsScreen(onBack = {

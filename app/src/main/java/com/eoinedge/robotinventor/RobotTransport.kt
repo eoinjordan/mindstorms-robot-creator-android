@@ -85,3 +85,14 @@ interface RobotTransport {
     suspend fun runProbe(plan: ProbePlan): Flow<ProbeTelemetry>
     suspend fun stopAll()
 }
+
+data class ProgramDeployResult(
+    val ok: Boolean,
+    val message: String,
+    val deviceName: String? = null,
+    val simulated: Boolean = false
+)
+
+interface ProgramDeployTransport {
+    suspend fun deployProgram(profile: RobotProfile, code: String): ProgramDeployResult
+}

@@ -39,6 +39,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SimpleModeScreen(
     profile: RobotProfile?,
+    transport: RobotTransport? = null,
     onExitSimpleMode: () -> Unit
 ) {
     val context = LocalContext.current
@@ -98,10 +99,14 @@ fun SimpleModeScreen(
                 }
             } else {
                 BlocklyEditor(kidsMode = true) { code ->
-                    exportProgramFile(context, profile, "wedo-blocks", "wedo2-micropython", code)
                     scope.launch {
+                        val deployer = transport as? ProgramDeployTransport
+                        val result = deployer?.deployProgram(profile, code)
+                        if (result?.ok != true) {
+                            exportProgramFile(context, profile, "wedo-blocks", "wedo2-micropython", code)
+                        }
                         snackbarHostState.showSnackbar(
-                            "Program exported. Use the LEGO app, Pybricks, or the web app direct WeDo BLE run."
+                            result?.message ?: "Bluetooth flash unavailable. Program exported instead."
                         )
                     }
                 }

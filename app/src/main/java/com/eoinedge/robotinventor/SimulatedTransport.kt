@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.random.Random
 
-class SimulatedTransport : RobotTransport {
+class SimulatedTransport : RobotTransport, ProgramDeployTransport {
     private val simulatedDevices = listOf(
         RobotDevice("wedo2-milo", "Milo", "WeDo 2.0 Smart Hub", 82),
         RobotDevice("wedo2-kraz", "Kraz", "WeDo 2.0 Smart Hub", 80),
@@ -85,5 +85,22 @@ class SimulatedTransport : RobotTransport {
 
     override suspend fun stopAll() {
         // No-op
+    }
+
+    override suspend fun deployProgram(profile: RobotProfile, code: String): ProgramDeployResult {
+        return when (profile.family) {
+            "wedo2", "robot-inventor", "spike-prime" -> ProgramDeployResult(
+                ok = true,
+                message = "Simulated Bluetooth run for ${profile.name}. ${code.lines().size} code lines parsed.",
+                deviceName = simulatedDevices.firstOrNull { it.id == profile.id }?.name ?: profile.name,
+                simulated = true
+            )
+            else -> ProgramDeployResult(
+                ok = false,
+                message = "${profile.name} is not directly Bluetooth-flashable from Android. Export the generated file or use the required bridge/client.",
+                deviceName = profile.name,
+                simulated = true
+            )
+        }
     }
 }

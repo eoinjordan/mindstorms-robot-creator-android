@@ -154,6 +154,32 @@ class AndroidFeatureCoverageTest {
         assertFailsWithIllegalArgument { transport.runProbe(ProbePlan("too-long", 0.3f, 20_000)).toList() }
     }
 
+    @Test
+    fun deployTransportReportsBleFlashSupportByFamily() = runBlocking {
+        val profiles = profiles().associateBy { it.id }
+        val transport = SimulatedTransport()
+
+        val wedo = transport.deployProgram(
+            profiles.getValue("wedo2-milo"),
+            defaultCode(profiles.getValue("wedo2-milo"), "drive", "wedo2-micropython")
+        )
+        assertTrue(wedo.ok)
+        assertTrue(wedo.message.contains("Bluetooth", ignoreCase = true))
+
+        val inventor = transport.deployProgram(
+            profiles.getValue("51515-blast"),
+            defaultCode(profiles.getValue("51515-blast"), "drive", "pybricks-python")
+        )
+        assertTrue(inventor.ok)
+
+        val ev3 = transport.deployProgram(
+            profiles.getValue("ev3-ev3rstorm"),
+            defaultCode(profiles.getValue("ev3-ev3rstorm"), "drive", "pybricks-ev3")
+        )
+        assertFalse(ev3.ok)
+        assertTrue(ev3.message.contains("not directly Bluetooth-flashable", ignoreCase = true))
+    }
+
     private suspend fun assertFailsWithIllegalArgument(block: suspend () -> Unit) {
         try {
             block()
